@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniBite - Explore</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navigation">
+    <div class="logo">UniBite</div>
+
+    <ul class="nav-links">
+        <li><a href="#" class="active"><span class="material-icons">home</span> <span class="nav-text">Home</span></a></li>
+        <li><a href="#"><span class="material-icons">receipt_long</span> <span class="nav-text">Orders</span></a></li>
+
+        <li class="nav-spacer"></li>
+
+        <li><a href="#"><span class="material-icons">restaurant</span> <span class="nav-text">Kitchen</span></a></li>
+        <li><a href="#"><span class="material-icons">person</span> <span class="nav-text">Profile</span></a></li>
+    </ul>
+
+    <button class="fab-post">
+        <span class="material-icons">add</span>
+        <span class="fab-text">Post Food</span>
+    </button>
+</nav>
+
+<main class="main-content">
+
+    <header class="top-header">
+        <h2>UniBite</h2>
+    </header>
+
+    <div class="view-toggle">
+        <button class="toggle-btn active"><span class="material-icons">view_list</span> List</button>
+        <button class="toggle-btn"><span class="material-icons">map</span> Map</button>
+    </div>
+
+    <div class="feed-container" id="dynamic-feed">
+
+        <article class="food-card">
+            <div class="card-img-container">
+                <img src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=500&auto=format&fit=crop" alt="Spicy Chicken Curry" class="card-img">
+                <span class="badge green">3 Portions Left</span>
+            </div>
+            <div class="card-info">
+                <div class="info-top">
+                    <h3 class="food-title">Spicy Chicken Curry</h3>
+                    <p class="location-text"><span class="material-icons small-icon">location_on</span> North Campus Dorms</p>
+                </div>
+                <div class="info-bottom">
+                    <span class="cook-name">Cook: Sarah J.</span>
+                    <button class="btn-reserve">Reserve</button>
+                </div>
+            </div>
+        </article>
+
+        <article class="food-card">
+            <div class="card-img-container">
+                <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&auto=format&fit=crop" alt="Vegan Quinoa Bowl" class="card-img">
+                <span class="badge green">1 Portion Left</span>
+            </div>
+            <div class="card-info">
+                <div class="info-top">
+                    <h3 class="food-title">Vegan Quinoa Bowl</h3>
+                    <p class="location-text"><span class="material-icons small-icon">location_on</span> Science Library</p>
+                </div>
+                <div class="info-bottom">
+                    <span class="cook-name">Cook: Mark D.</span>
+                    <button class="btn-reserve">Reserve</button>
+                </div>
+            </div>
+        </article>
+
+    </div>
+</main>
+
+</body>
+</html>

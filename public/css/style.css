@@ -1,0 +1,224 @@
+:root {
+    --primary-color: #FF5722;
+    --secondary-color: #4CAF50;
+    --accent-color: #FFB300;
+    --bg-color: #F8F9FA;
+    --text-dark: #212529;
+    --text-light: #6c757d;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-dark);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column; /* Mobile-First: Όλα σε μια στήλη */
+}
+
+/* Mobile first layout */
+
+.navigation {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+    z-index: 1000;
+}
+
+.logo { display: none; }
+
+.nav-links {
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+    align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-links a {
+    color: var(--text-light);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5px;
+    transition: color 0.2s;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    color: var(--primary-color);
+}
+
+/* Ετικέτες κάτω από τα εικονίδια */
+.nav-text {
+    display: block;
+    font-size: 10px;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+/* Το κενό στη μέση για να κάτσει το στρογγυλό κουμπί */
+.nav-spacer { width: 60px; }
+
+/* Μεγάλο Πορτοκαλί Κουμπί */
+.fab-post {
+    position: absolute;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+.fab-post:active { transform: translateX(-50%) scale(0.95); }
+.fab-text { display: none; }
+
+/* Main Content Area */
+.main-content {
+    padding: 20px;
+    padding-bottom: 90px;
+    width: 100%;
+}
+
+.top-header { margin-bottom: 20px; }
+.top-header h2 { margin: 0; color: var(--primary-color); }
+
+/* Toggle List/Map (Το κουμπί εναλλαγής προβολής) */
+.view-toggle {
+    display: flex;
+    background-color: white;
+    border-radius: 30px;
+    padding: 5px;
+    margin: 0 auto 20px auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    max-width: 300px;
+}
+
+.toggle-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--text-light);
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.toggle-btn.active {
+    background-color: #ffeae3;
+    color: var(--primary-color);
+}
+
+/* glass (floating) info card */
+
+.feed-container {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.food-card {
+    background: transparent; /* Διάφανο φόντο, η κάρτα "χτίζεται" από τα στοιχεία της */
+    display: flex;
+    flex-direction: column;
+}
+
+.card-img-container {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.badge.green {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Το γυάλινο πλαίσιο πληροφοριών που ανεβαίνει πάνω στην εικόνα */
+.card-info {
+    position: relative;
+    margin-top: -50px; /* Το τραβάει πάνω από την εικόνα */
+    margin-left: 15px;
+    margin-right: 15px;
+    margin-bottom: 15px;
+    background: rgba(255, 255, 255, 0.85); /* 85% αδιαφάνεια - λευκό */
+    backdrop-filter: blur(12px); /* Το εφέ θολώματος (glassmorphism) */
+    -webkit-backdrop-filter: blur(12px); /* Για Safari */
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 2;
+    border: 1px solid rgba(255,255,255,0.5);
+}
+
+.food-title { margin: 0; font-size: 18px; color: var(--text-dark); }
+.location-text { margin: 5px 0 0 0; color: var(--text-light); font-size: 14px; display: flex; align-items: center; }
+.small-icon { font-size: 16px; margin-right: 4px; }
+
+.info-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding-top: 10px;
+}
+
+.cook-name { font-size: 14px; font-weight: 500; }
+
+.btn-reserve {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+}
+.btn-reserve:hover { background-color: #e64a19; }
+.btn-reserve:active { transform: scale(0.95); }
