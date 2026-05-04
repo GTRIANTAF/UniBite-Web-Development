@@ -1,24 +1,16 @@
 const express = require('express');
 const path = require('path');
-const db = require('./database_connection'); // Εισαγωγή της σύνδεσης που τεστάραμε
-
 const app = express();
 const PORT = 3000;
 
-// Middleware για Express
+// Εισαγωγή των Routes
+const listingsRouter = require('./routes/listings');
+
+// Middleware
 app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.json());
 
-// --- 1. GET Request: Φέρε όλες τις αγγελίες ---
-app.get('/api/listings', (req, res) => {
-    const query = 'SELECT * FROM Food_Posting WHERE creation_timestamp > NOW() - INTERVAL 48 HOUR';
-
-    db.query(query, (err, results) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json(results); // Επιστρέφει τα δεδομένα σε μορφή JSON
-    });
-});
+αpp.use('/api/listings', listingsRouter);
 
 app.listen(PORT, () => {
     console.log(`Ο server τρέχει στο http://localhost:${PORT}`);

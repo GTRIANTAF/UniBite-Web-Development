@@ -102,7 +102,7 @@ body {
 .top-header { margin-bottom: 20px; }
 .top-header h2 { margin: 0; color: var(--primary-color); }
 
-/* Toggle List/Map (Το κουμπί εναλλαγής προβολής) */
+/* Toggle List/Map */
 .view-toggle {
     display: flex;
     background-color: white;
