@@ -1,7 +1,7 @@
 const feedContainer = document.querySelector('#dynamic-feed');
 const postButton = document.querySelector('.fab-post');
 
-const API_URL = 'http://localhost:3000/api/listings';
+const API_URL = '/api/listings';
 
 function loadFeed() {
 
@@ -43,7 +43,7 @@ function loadFeed() {
 
                         <div class="info-bottom">
                             <span class="cook-name">Pickup: ${listing.pickup_time ? formatPickupTime(listing.pickup_time) : 'Άμεσα'}</span>
-                            <button class="btn-reserve">Reserve</button>
+                            <button class="btn-reserve" data-listing-id="${listing.id}">Reserve</button>
                         </div>
                     </div>
                 `;
@@ -85,6 +85,38 @@ postButton.addEventListener('click', function (e) {
             loadFeed(); // load new listing
         })
         .catch(error => console.error("Σφάλμα στο POST:", error));
+});
+
+feedContainer.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('btn-reserve')) {
+        e.preventDefault();
+
+        const listingId = e.target.getAttribute('data-listing-id');
+        const userId = 1;
+
+        try {
+            const response = await fetch('/api/request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ listingId: listingId, userId: userId })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert("Τέλεια! " + data.message);
+                e.target.innerText = "Pending...";
+                e.target.disabled = true;
+                e.target.style.backgroundColor = "gray";
+            } else {
+                alert("Αποτυχία: " + data.error);
+            }
+
+        } catch (error) {
+            console.error("Σφάλμα σύνδεσης:", error);
+            alert("Υπήρξε πρόβλημα με τον server.");
+        }
+    }
 });
 
 function formatPickupTime(dateString) {

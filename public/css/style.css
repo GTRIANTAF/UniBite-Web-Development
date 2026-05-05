@@ -249,6 +249,8 @@ body {
 
     .nav-spacer { display: none; } /* Κρύβουμε το κενό του κινητού */
 
+    .top-header h2 { display: none; }
+
     .nav-links {
         flex-direction: column;
         align-items: stretch;

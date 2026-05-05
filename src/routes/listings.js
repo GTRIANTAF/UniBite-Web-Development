@@ -30,3 +30,5 @@ router.post('/', (req, res) => {
         res.json({ message: "Η αγγελία δημιουργήθηκε!", id: results.insertId });
     });
 });
+
+module.exports = router;
