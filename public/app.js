@@ -1,5 +1,6 @@
 const feedContainer = document.querySelector('#dynamic-feed');
 const postButton = document.querySelector('.fab-post');
+const postForm = document.querySelector('#post-form');
 
 const API_URL = 'http://localhost:3000/api/listings';
 
@@ -58,33 +59,13 @@ function loadFeed() {
         });
 }
 
+
 postButton.addEventListener('click', function (e) {
+
     e.preventDefault();
 
-    //dummy listing
-    let newListing = {
-        title: "Σπιτική Καρμπονάρα",
-        portions: 2,
-        description: "Φρέσκα μακαρόνια με αυθεντική ιταλική συνταγή.",
-        pickup_location: "Εστιατόριο Βιβλιοθήκης",
-        pickup_time: "2026-05-05 14:30:00"
-    };
+    postForm.classList.toggle('hidden');
 
-    console.log("Προσπάθεια δημιουργίας αγγελίας...");
-
-    fetch(API_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newListing)
-    })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Η αγγελία δημιουργήθηκε:', data);
-            loadFeed(); // load new listing
-        })
-        .catch(error => console.error("Σφάλμα στο POST:", error));
 });
 
 function formatPickupTime(dateString) {

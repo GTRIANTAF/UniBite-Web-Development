@@ -222,3 +222,7 @@ body {
 }
 .btn-reserve:hover { background-color: #e64a19; }
 .btn-reserve:active { transform: scale(0.95); }
+
+.hidden {
+    display: none;
+}
