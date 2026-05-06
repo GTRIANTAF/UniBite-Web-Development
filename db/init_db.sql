@@ -12,7 +12,7 @@ CREATE TABLE User(
     PRIMARY KEY(user_id)
 );
 
-CREATE TABLE food_Posting(
+CREATE TABLE Listing(
     listing_id INT AUTO_INCREMENT,
     cook_id INT,
     title TEXT NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE Request(
     delivery_status ENUM ('Pending', 'Picked Up', 'Didnt show'),
     creation_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY(request_id),
-    FOREIGN KEY(listing_id) REFERENCES food_Posting(listing_id),
+    FOREIGN KEY(listing_id) REFERENCES Listing(listing_id),
     FOREIGN KEY(consumer_id) REFERENCES User(user_id)
 );
 

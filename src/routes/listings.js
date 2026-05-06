@@ -6,8 +6,11 @@ const db = require('../database_connection');
 // GET all listings
 router.get('/', (req, res) => {
 
-  const query = 'SELECT * FROM food_Posting';
-
+    const query = `
+    SELECT * FROM food_Posting
+    WHERE creation_timestamp > NOW() - INTERVAL 48 HOUR
+    `;
+    
   db.query(query, (err, results) => {
 
     if (err) {
