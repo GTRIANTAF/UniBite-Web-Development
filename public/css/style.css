@@ -7,6 +7,8 @@
     --text-light: #6c757d;
 }
 
+*{box-sizing: border-box;}
+
 body {
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--bg-color);
@@ -31,6 +33,10 @@ body {
     padding: 10px 0;
     box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
     z-index: 1000;
+}
+
+#map {
+    height: 450px;
 }
 
 .logo { display: none; }
@@ -149,6 +155,19 @@ body {
     flex-direction: column;
 }
 
+/* sold out food cards */
+.food-card.noAvailability {
+    opacity: 0.6;
+    filter: grayscale(0.8); /* Αφαιρεί το χρώμα */
+    pointer-events: none; /* Απενεργοποιεί τα κλικ σε όλη την κάρτα*/
+}
+
+.food-card.noAvailability .btn-reserve {
+    background-color: #888 !important; /* Γκρι χρώμα στο κουμπί */
+    cursor: not-allowed;
+    pointer-events: auto; /* Επιτρέπει το hover για να φαίνεται το απαγορευτικό εικονίδιο */
+}
+
 .card-img-container {
     position: relative;
     width: 100%;
@@ -225,6 +244,15 @@ body {
 
 @media (min-width: 768px) {
     body { flex-direction: row; }
+
+    #map {
+        width: 100%;
+        height: 650px;
+        border: 2px solid #ccc;
+        border-radius: 8px;
+        z-index: 1;
+        margin-bottom: 20px;
+    }
 
     /* Μετατροπή της Bottom Bar σε Αριστερό Sidebar */
     .navigation {
@@ -309,3 +337,5 @@ body {
     .card-img-container { width: 100%; }
     .card-info { width: auto; }
 }
+
+.hidden-view { display: none;}

@@ -1,60 +1,80 @@
 const feedContainer = document.querySelector('#dynamic-feed');
 const postButton = document.querySelector('.fab-post');
 
+const listBtn = document.getElementById('list-view-btn');
+const mapBtn = document.getElementById('map-view-btn');
+const mapDiv = document.getElementById('map');
+const feedDiv = document.getElementById('dynamic-feed');
+
 const API_URL = '/api/listings';
 
 function loadFeed() {
+    feedContainer.innerHTML = '';
 
     fetch(API_URL)
         .then(res => res.json())
         .then(data => {
-            feedContainer.innerHTML = '';
-
             if (data.length === 0) {
                 feedContainer.innerHTML = '<h3>Δεν υπάρχουν διαθέσιμες αγγελίες.</h3>';
                 return;
             }
 
-            // Loop for each listing and create a card
+            if (typeof markersLayer !== 'undefined') markersLayer.clearLayers();
+
             data.forEach(listing => {
+                const id = listing.listing_id;
+                const portions = listing.available_portions ?? 0;
+                const isExhausted = portions <= 0;
+
+                // List View
                 const card = document.createElement('article');
-                card.className = 'food-card';
+                card.className = `food-card ${isExhausted ? 'noAvailability' : ''}`;
 
                 card.innerHTML = `
                     <div class="card-img-container">
-                        <img 
-                            src="${listing.photo_url || 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=500&auto=format&fit=crop'}" 
-                            alt="${listing.title}" 
-                            class="card-img"
-                        >
-                        <span class="badge green">${listing.available_portions || 1} Portions Left</span>
+                        <img src="${listing.photo_url || 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=500'}" class="card-img">
+                        <span class="badge ${isExhausted ? 'grey-badge' : 'green'}">
+                            ${portions} Portions Left
+                        </span>
                     </div>
-
                     <div class="card-info">
                         <div class="info-top">
                             <h3 class="food-title">${listing.title}</h3>
-                            <p class="location-text">
-                                <span class="material-icons small-icon">location_on</span>
-                                ${listing.pickup_location || 'Μη ορισμένη τοποθεσία'}
-                            </p>
+                            <p class="location-text"><span class="material-icons">location_on</span>${listing.pickup_location}</p>
                         </div>
-
-                        <p>${listing.description || 'Χωρίς περιγραφή.'}</p>
-
+                        <p>${listing.description}</p>
                         <div class="info-bottom">
-                            <span class="cook-name">Pickup: ${listing.pickup_time ? formatPickupTime(listing.pickup_time) : 'Άμεσα'}</span>
-                            <button class="btn-reserve" data-listing-id="${listing.id}">Reserve</button>
+                            <span>Pickup: ${listing.pickup_time ? formatPickupTime(listing.pickup_time) : 'Άμεσα'}</span>
+                            <button class="btn-reserve" data-listing-id="${id}" ${isExhausted ? 'disabled   ' : ''}>
+                                ${isExhausted ? 'Sold Out' : 'Reserve'}
+                            </button>
                         </div>
                     </div>
                 `;
-
                 feedContainer.appendChild(card);
+
+                // Map View
+                if (typeof markersLayer !== 'undefined') {
+                    const lat = 38.2466 + (Math.random() - 0.5) * 0.01;
+                    const lng = 21.7346 + (Math.random() - 0.5) * 0.01;
+
+                    const marker = L.marker([lat, lng]);
+                    marker.bindPopup(`
+                        <div style="text-align:center">
+                            <h4>${listing.title}</h4>
+                            <p>Portions: ${portions}</p>
+                            <button class="reserve-btn" data-listing-id="${id}" ${isExhausted ? 'disabled' : ''}>
+                                ${isExhausted ? 'Sold Out' : 'Reserve'}
+                            </button>
+                        </div>
+                    `);
+                    markersLayer.addLayer(marker);
+                }
             });
         })
-        // Το exception catching της Fetch API
-        .catch(error => {
-            console.error('Error loading listings:', error);
-            feedContainer.innerHTML = '<h3>Σφάλμα κατά τη φόρτωση αγγελιών. Σιγουρέψου ότι ο server τρέχει!</h3>';
+        .catch(err => {
+            console.error(err);
+            feedContainer.innerHTML = '<h3>Σφάλμα σύνδεσης.</h3>';
         });
 }
 
@@ -128,3 +148,34 @@ function formatPickupTime(dateString) {
 }
 
 loadFeed();
+
+const map = L.map('map').setView([38.2466, 21.7346], 13);
+const markersLayer = L.layerGroup().addTo(map);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+}).addTo(map);
+
+function toggleView(showMap) {
+    if (showMap) {
+        // Εμφάνιση Χάρτη - Κρύψιμο Λίστας
+        mapDiv.classList.remove('hidden-view');
+        feedDiv.classList.add('hidden-view');
+
+        mapBtn.classList.add('active');
+        listBtn.classList.remove('active');
+
+        setTimeout(() => { map.invalidateSize(); }, 100);
+    } else {
+        // Εμφάνιση Λίστας - Κρύψιμο Χάρτη
+        mapDiv.classList.add('hidden-view');
+        feedDiv.classList.remove('hidden-view');
+
+        listBtn.classList.add('active');
+        mapBtn.classList.remove('active');
+    }
+}
+
+listBtn.addEventListener('click', () => toggleView(false));
+mapBtn.addEventListener('click', () => toggleView(true));
