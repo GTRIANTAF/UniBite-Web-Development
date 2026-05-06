@@ -41,3 +41,145 @@ app.get('/users', (req, res) => {
     }
   });
 });
+
+app.post('/listings', (req, res) => {
+    const {
+      cook_id,
+      title,
+      description,
+      allergens,
+      pickup_location,
+      pickup_time,
+      total_portions
+    } = req.body;
+
+    const query = `
+    INSERT INTO food_Posting
+    (cook_id, title, description, allergens, pickup_location, pickup_time, total_portions)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+    db.query(
+      query,
+      [
+        cook_id,
+        title,
+        description,
+        allergens,
+        pickup_location,
+        pickup_time,
+        total_portions
+      ],
+      (err, result) => {
+        if (err) {
+          res.status(500).json(err);
+        } else {
+          res.json({
+          message: 'Listing created successfully',
+          listingId: result.insertId
+        });
+        }
+
+      }
+    );
+});
+
+app.delete('/listings/:id', (req, res) => {
+
+  const listingId = req.params.id;
+
+  const query = `
+    DELETE FROM food_Posting
+    WHERE listing_id = ?
+  `;
+
+  db.query(query, [listingId], (err, result) => {
+
+    if (err) {
+      res.status(500).json(err);
+
+    } else {
+
+      if (result.affectedRows === 0) {
+
+        res.status(404).json({
+          message: 'Listing not found'
+        });
+
+      } else {
+
+        res.json({
+          message: 'Listing deleted successfully'
+        });
+
+      }
+
+    }
+
+  });
+
+});
+
+app.put('/listings/:id', (req, res) => {
+
+  const listingId = req.params.id;
+
+  const {
+    title,
+    description,
+    allergens,
+    pickup_location,
+    pickup_time,
+    total_portions
+  } = req.body;
+
+  const query = `
+    UPDATE food_Posting
+    SET
+      title = ?,
+      description = ?,
+      allergens = ?,
+      pickup_location = ?,
+      pickup_time = ?,
+      total_portions = ?
+    WHERE listing_id = ?
+  `;
+
+  db.query(
+    query,
+    [
+      title,
+      description,
+      allergens,
+      pickup_location,
+      pickup_time,
+      total_portions,
+      listingId
+    ],
+    (err, result) => {
+
+      if (err) {
+
+        res.status(500).json(err);
+
+      } else {
+
+        if (result.affectedRows === 0) {
+
+          res.status(404).json({
+            message: 'Listing not found'
+          });
+
+        } else {
+
+          res.json({
+            message: 'Listing updated successfully'
+          });
+
+        }
+
+      }
+
+    }
+  );
+
+});
