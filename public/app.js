@@ -1,6 +1,14 @@
 const feedContainer = document.querySelector('#dynamic-feed');
 const postButton = document.querySelector('.fab-post');
 
+const map = L.map('map').setView([38.2466, 21.7346], 13);
+const markersLayer = L.layerGroup().addTo(map);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap contributors © CARTO'
+}).addTo(map);
+
 const listBtn = document.getElementById('list-view-btn');
 const mapBtn = document.getElementById('map-view-btn');
 const mapDiv = document.getElementById('map');
@@ -8,12 +16,100 @@ const feedDiv = document.getElementById('dynamic-feed');
 
 const API_URL = '/api/listings';
 
+// Map function
+function toggleView(showMap) {
+    if (showMap) {
+        // Show map - Hidden List
+        mapDiv.classList.remove('hidden-view');
+        feedDiv.classList.add('hidden-view');
+
+        mapBtn.classList.add('active');
+        listBtn.classList.remove('active');
+    } else {
+        // Show List - Hidden map
+        mapDiv.classList.add('hidden-view');
+        feedDiv.classList.remove('hidden-view');
+
+        listBtn.classList.add('active');
+        mapBtn.classList.remove('active');
+    }
+}
+
+// Distance filter
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Earth Radius (km)
+    // Coordinate Formula
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+
+    // Haversine Formula for Distance
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in km
+}
+
+function getUserLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+            userLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
+
+            map.setView([userLocation.lat, userLocation.lng], 13);
+
+            // Add a marker for the user's location
+            L.circle([userLocation.lat, userLocation.lng], {
+                radius: 200,
+                color: '#2ecc71',
+                fillColor: '#2ecc71',
+                fillOpacity: 0.5
+            }).addTo(map).bindPopup("You are here!");
+            loadFeed();
+        }, error => {
+            console.error("Άρνηση τοποθεσίας, χρησιμοποιούμε προεπιλογή Πάτρα.");
+            loadFeed();
+        });
+    } else {
+        loadFeed();
+    }
+}
+
+function filterByDistance(maxKm) {
+    const limit = parseFloat(maxKm);
+
+    // 1. Φιλτράρισμα Καρτών
+    const cards = document.querySelectorAll('.food-card');
+    cards.forEach(card => {
+        const d = parseFloat(card.dataset.distance);
+        card.style.display = d > limit ? 'none' : 'block';
+    });
+
+    // 2. Φιλτράρισμα Markers
+    markersLayer.eachLayer(marker => {
+        const d = marker.options.distance;
+        if (d > limit) {
+            map.removeLayer(marker);
+        } else {
+            if (!map.hasLayer(marker)) {
+                marker.addTo(map);
+            }
+        }
+    });
+}
+
+// Dynamic Feed
 function loadFeed() {
     feedContainer.innerHTML = '';
 
     fetch(API_URL)
         .then(res => res.json())
         .then(data => {
+            // Check if array empty
             if (data.length === 0) {
                 feedContainer.innerHTML = '<h3>Δεν υπάρχουν διαθέσιμες αγγελίες.</h3>';
                 return;
@@ -21,14 +117,22 @@ function loadFeed() {
 
             if (typeof markersLayer !== 'undefined') markersLayer.clearLayers();
 
+            // Card drawing
             data.forEach(listing => {
                 const id = listing.listing_id;
                 const portions = listing.available_portions ?? 0;
                 const isExhausted = portions <= 0;
 
+                const lat = listing.latitude || 38.2466;
+                const lng = listing.longitude || 21.7346;
+
+                const dist = calculateDistance(userLocation.lat, userLocation.lng, lat, lng);
+
                 // List View
                 const card = document.createElement('article');
                 card.className = `food-card ${isExhausted ? 'noAvailability' : ''}`;
+
+                card.dataset.distance = dist;
 
                 card.innerHTML = `
                     <div class="card-img-container">
@@ -55,10 +159,8 @@ function loadFeed() {
 
                 // Map View
                 if (typeof markersLayer !== 'undefined') {
-                    const lat = 38.2466 + (Math.random() - 0.5) * 0.01;
-                    const lng = 21.7346 + (Math.random() - 0.5) * 0.01;
-
                     const marker = L.marker([lat, lng]);
+                    marker.options.distance = dist;
                     marker.bindPopup(`
                         <div style="text-align:center">
                             <h4>${listing.title}</h4>
@@ -78,35 +180,15 @@ function loadFeed() {
         });
 }
 
-postButton.addEventListener('click', function (e) {
-    e.preventDefault();
+function formatPickupTime(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleString('el-GR', {
+        dateStyle: 'short',
+        timeStyle: 'short'
+    });
+}
 
-    //dummy listing
-    let newListing = {
-        title: "Σπιτική Καρμπονάρα",
-        portions: 2,
-        description: "Φρέσκα μακαρόνια με αυθεντική ιταλική συνταγή.",
-        pickup_location: "Εστιατόριο Βιβλιοθήκης",
-        pickup_time: "2026-05-05 14:30:00"
-    };
-
-    console.log("Προσπάθεια δημιουργίας αγγελίας...");
-
-    fetch(API_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newListing)
-    })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Η αγγελία δημιουργήθηκε:', data);
-            loadFeed(); // load new listing
-        })
-        .catch(error => console.error("Σφάλμα στο POST:", error));
-});
-
+// -- Event Listeners --
 feedContainer.addEventListener('click', async (e) => {
     if (e.target.classList.contains('btn-reserve')) {
         e.preventDefault();
@@ -139,43 +221,14 @@ feedContainer.addEventListener('click', async (e) => {
     }
 });
 
-function formatPickupTime(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleString('el-GR', {
-        dateStyle: 'short',
-        timeStyle: 'short'
-    });
-}
-
-loadFeed();
-
-const map = L.map('map').setView([38.2466, 21.7346], 13);
-const markersLayer = L.layerGroup().addTo(map);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap'
-}).addTo(map);
-
-function toggleView(showMap) {
-    if (showMap) {
-        // Εμφάνιση Χάρτη - Κρύψιμο Λίστας
-        mapDiv.classList.remove('hidden-view');
-        feedDiv.classList.add('hidden-view');
-
-        mapBtn.classList.add('active');
-        listBtn.classList.remove('active');
-
-        setTimeout(() => { map.invalidateSize(); }, 100);
-    } else {
-        // Εμφάνιση Λίστας - Κρύψιμο Χάρτη
-        mapDiv.classList.add('hidden-view');
-        feedDiv.classList.remove('hidden-view');
-
-        listBtn.classList.add('active');
-        mapBtn.classList.remove('active');
-    }
-}
+document.getElementById('distance-range').addEventListener('input', (e) => {
+    const radius = e.target.value;
+    document.getElementById('range-value').innerText = radius;
+    filterByDistance(radius);
+});
 
 listBtn.addEventListener('click', () => toggleView(false));
 mapBtn.addEventListener('click', () => toggleView(true));
+
+loadFeed();
+getUserLocation();

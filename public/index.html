@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="css/style.css">
 
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
 
@@ -17,17 +19,9 @@
     <ul class="nav-links">
         <li><a href="#" class="active"><span class="material-icons">home</span> <span class="nav-text">Home</span></a></li>
         <li><a href="#"><span class="material-icons">receipt_long</span> <span class="nav-text">Orders</span></a></li>
-
-        <li class="nav-spacer"></li>
-
-        <li><a href="#"><span class="material-icons">restaurant</span> <span class="nav-text">Kitchen</span></a></li>
         <li><a href="#"><span class="material-icons">person</span> <span class="nav-text">Profile</span></a></li>
     </ul>
 
-    <button class="fab-post">
-        <span class="material-icons">add</span>
-        <span class="fab-text">Post Food</span>
-    </button>
 </nav>
 
 <main class="main-content">
@@ -37,9 +31,19 @@
     </header>
 
     <div class="view-toggle">
-        <button class="toggle-btn active"><span class="material-icons">view_list</span> List</button>
-        <button class="toggle-btn"><span class="material-icons">map</span> Map</button>
+        <button id="list-view-btn" class="toggle-btn active"><span class="material-icons">view_list</span> List</button>
+        <button id="map-view-btn" class="toggle-btn"><span class="material-icons">map</span> Map</button>
     </div>
+
+    <div class="range-container">
+        <div class="range-header">
+            <span>Ακτίνα Αναζήτησης</span>
+            <span id="range-value" class="range-badge">5 km</span>
+        </div>
+        <input type="range" id="distance-range" min="1" max="20" value="5" class="modern-slider">
+    </div>
+
+    <div id="map" class="hidden-view"></div>
 
     <div class="feed-container" id="dynamic-feed">
 
