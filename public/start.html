@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniBite - Καλώς ήρθατε</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-orange: #FF5722;
+            --primary-green: #4CAF50;
+            --bg-orange-light: #FFEAE3;
+            --bg-green-light: #E8F5E9;
+            --text-dark: #212529;
+            --text-muted: #6c757d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #FFF3E0 0%, #E8F5E9 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .title-font {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header-section h1 {
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--primary-orange);
+            margin-bottom: 10px;
+        }
+
+        .header-section p {
+            color: var(--text-muted);
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        /* ΚΑΡΤΕΣ (GLASSMORPHISM) */
+        .cards-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .role-btn {
+            width: 100%;
+            background: none;
+            border: none;
+            cursor: pointer;
+            outline: none;
+            text-align: left;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .role-btn:hover .glass-card {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Ειδικά χρώματα ανά κάρτα */
+        .card-consumer { border-left: 5px solid var(--primary-orange); }
+        .card-cook { border-left: 5px solid var(--primary-green); }
+
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-box.orange {
+            background-color: var(--bg-orange-light);
+            color: var(--primary-orange);
+        }
+
+        .icon-box.green {
+            background-color: var(--bg-green-light);
+            color: var(--primary-green);
+        }
+
+        .icon-box .material-icons {
+            font-size: 32px;
+        }
+
+        .card-text {
+            flex-grow: 1;
+        }
+
+        .card-text h2 {
+            font-size: 20px;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .card-text p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .arrow-icon {
+            color: #bbb;
+            transition: color 0.3s ease;
+        }
+
+        .role-btn:hover .arrow-icon {
+            color: var(--text-dark);
+        }
+
+        /* Admin Link */
+        .admin-link {
+            margin-top: 50px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .admin-link:hover {
+            color: var(--text-dark);
+        }
+
+    </style>
+</head>
+<body>
+
+<main class="main-container">
+
+    <header class="header-section">
+        <h1 class="title-font">UniBite</h1>
+        <p>Μοιράσου το φαγητό σου, κέρδισε πόντους!</p>
+    </header>
+
+    <div class="cards-wrapper">
+
+        <button onclick="selectRole('consumer')" class="role-btn">
+            <div class="glass-card card-consumer">
+                <div class="icon-box orange">
+                    <span class="material-icons">restaurant</span>
+                </div>
+                <div class="card-text">
+                    <h2 class="title-font">Πεινάω!</h2>
+                    <p>Βρες σπιτικό φαγητό στο campus.</p>
+                </div>
+                <span class="material-icons arrow-icon">chevron_right</span>
+            </div>
+        </button>
+
+        <button onclick="selectRole('cook')" class="role-btn">
+            <div class="glass-card card-cook">
+                <div class="icon-box green">
+                    <span class="material-icons">soup_kitchen</span>
+                </div>
+                <div class="card-text">
+                    <h2 class="title-font">Μαγείρεψα!</h2>
+                    <p>Μοιράσου μερίδες, μάζεψε πόντους.</p>
+                </div>
+                <span class="material-icons arrow-icon">chevron_right</span>
+            </div>
+        </button>
+
+    </div>
+
+    <button onclick="selectRole('admin')" class="admin-link">
+        <span class="material-icons">admin_panel_settings</span>
+        Είσοδος Διαχειριστή
+    </button>
+
+</main>
+
+<script>
+    function selectRole(role) {
+        // 1. Αποθηκεύουμε τον ρόλο στον browser
+        localStorage.setItem('unibite_role', role);
+
+        // 2. Ανακατεύθυνση στο σωστό αρχείο
+        if (role === 'consumer') {
+            window.location.href = 'index.html'; // Η σελίδα σου
+        } else if (role === 'cook') {
+            window.location.href = 'cook.html';  // Η σελίδα της Μαρίας
+        } else if (role === 'admin') {
+            window.location.href = 'admin.html'; // Σελίδα στατιστικών
+        }
+    }
+</script>
+
+</body>
+</html>

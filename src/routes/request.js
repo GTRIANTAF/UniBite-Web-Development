@@ -6,9 +6,7 @@ router.post('/', (req, res) => {
     const {listingId, userId} = req.body;
 
     // 1. Έλεγχος πόντων χρήστη
-    const userPointsQuery = `SELECT points
-                             FROM User
-                             WHERE user_id = ?`;
+    const userPointsQuery = `SELECT points FROM User WHERE user_id = ?`;
 
     db.query(userPointsQuery, [userId], (err, userResults) => {
         if (err) return res.status(500).json({error: "Database error (User)"});
@@ -18,9 +16,7 @@ router.post('/', (req, res) => {
         }
 
         // 2. Έλεγχος διαθεσιμότητας αγγελίας
-        const checkListingQuery = `SELECT available_portions
-                                   FROM Listing
-                                   WHERE listing_id = ?`;
+        const checkListingQuery = `SELECT available_portions FROM Listing WHERE listing_id = ?`;
 
         db.query(checkListingQuery, [listingId], (err, listingResults) => {
             if (err) return res.status(500).json({error: "Database error (Listing)"});
@@ -35,8 +31,7 @@ router.post('/', (req, res) => {
             }
 
             // 3. Δημιουργία Request
-            const insertQuery = `INSERT INTO Request (listing_id, consumer_id)
-                                 VALUES (?, ?)`;
+            const insertQuery = `INSERT INTO Request (listing_id, consumer_id) VALUES (?, ?)`;
 
             db.query(insertQuery, [listingId, userId], (err, result) => {
                 if (err) return res.status(500).json({error: "Αποτυχία δημιουργίας αιτήματος."});

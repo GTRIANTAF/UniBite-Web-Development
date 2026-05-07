@@ -188,6 +188,74 @@ function formatPickupTime(dateString) {
     });
 }
 
+function loadOrders() {
+    const ordersContainer = document.getElementById('orders-container');
+    ordersContainer.innerHTML = '<p>Φόρτωση...</p>';
+
+    fetch(`/api/orders`)
+        .then(res => res.json())
+        .then(orders => {
+            console.log(orders);
+            if (!orders || orders.length === 0) {
+                ordersContainer.innerHTML = '<h3>Δεν έχεις παραγγελίες ακόμα.</h3>';
+                return;
+            }
+
+            ordersContainer.innerHTML = '';
+            orders.forEach(order => {
+                const status = (order.status || 'pending').toLowerCase();
+                const card = document.createElement('article');
+                card.className = `order-card ${status}`;
+                card.innerHTML = `
+                    <div class="order-header">
+                        <span class="order-date">${formatPickupTime(order.created_at)}</span>
+                        <span class="order-badge ${status}">${status}</span>
+                    </div>
+                    <div class="order-body">
+                        <div class="order-icon"><span class="material-icons">restaurant</span></div>
+                        <div class="order-info">
+                            <h4>${order.title}</h4>
+                            <p>${order.pickup_location || ''}</p>
+                        </div>
+                    </div>
+                    ${status === 'completed' ? `
+                    <div class="order-actions">
+                        <button class="btn-review" data-order-id="${order.request_id}">Αξιολόγηση</button>
+                    </div>` : ''}
+                `;
+                ordersContainer.appendChild(card);
+            });
+        })
+        .catch(err => {
+            console.error(err);
+            ordersContainer.innerHTML = '<h3>Σφάλμα φόρτωσης παραγγελιών.</h3>';
+        });
+}
+
+function switchView(viewName) {
+    // 1. Κρύβουμε όλα
+    document.getElementById('home-view').classList.add('hidden-view');
+    document.getElementById('orders-view').classList.add('hidden-view');
+    document.getElementById('profile-view').classList.add('hidden-view');
+
+    // 2. Εμφανίζουμε αυτό που θέλουμε
+    document.getElementById(viewName + '-view').classList.remove('hidden-view');
+
+    // 3. Ενημερώνουμε τα κουμπιά
+    document.getElementById('nav-home').classList.remove('active');
+    document.getElementById('nav-orders').classList.remove('active');
+    document.getElementById('nav-profile').classList.remove('active');
+    document.getElementById('nav-' + viewName).classList.add('active');
+
+    if (viewName === 'home' && typeof map !== 'undefined') {
+        setTimeout(() => { map.invalidateSize(); }, 100);
+    } else if (viewName === 'orders') {
+        if (typeof loadOrders === "function") loadOrders();
+    } else if (viewName === 'profile') {
+        if (typeof loadProfile === "function") loadProfile();
+    }
+}
+
 // -- Event Listeners --
 feedContainer.addEventListener('click', async (e) => {
     if (e.target.classList.contains('btn-reserve')) {
