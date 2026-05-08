@@ -12,7 +12,7 @@ CREATE TABLE User(
     PRIMARY KEY(user_id)
 );
 
-CREATE TABLE Listing(
+CREATE TABLE food_Posting(
     listing_id INT AUTO_INCREMENT,
     cook_id INT,
     title TEXT NOT NULL,

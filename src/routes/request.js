@@ -16,7 +16,7 @@ router.post('/', (req, res) => {
         }
 
         // 2. Έλεγχος διαθεσιμότητας αγγελίας
-        const checkListingQuery = `SELECT available_portions FROM Listing WHERE listing_id = ?`;
+        const checkListingQuery = `SELECT available_portions FROM food_Posting WHERE listing_id = ?`;
 
         db.query(checkListingQuery, [listingId], (err, listingResults) => {
             if (err) return res.status(500).json({error: "Database error (Listing)"});
@@ -37,15 +37,11 @@ router.post('/', (req, res) => {
                 if (err) return res.status(500).json({error: "Αποτυχία δημιουργίας αιτήματος."});
 
                 // 4. Μείωση μερίδων αγγελίας
-                db.query(`UPDATE Listing
-                          SET available_portions = available_portions - 1
-                          WHERE listing_id = ?`, [listingId], (err) => {
+                db.query(`UPDATE food_Posting SET available_portions = available_portions - 1 WHERE listing_id = ?`, [listingId], (err) => {
                     if (err) console.error("Σφάλμα μείωσης μερίδων:", err);
 
                     // 5. Αφαίρεση πόντων
-                    db.query(`UPDATE User
-                              SET points = points - 1
-                              WHERE user_id = ?`, [userId], (err) => {
+                    db.query(`UPDATE User SET points = points - 1 WHERE user_id = ?`, [userId], (err) => {
                         if (err) console.error("Σφάλμα αφαίρεσης πόντου:", err);
 
                         res.status(201).json({message: "Το αίτημα στάλθηκε και οι μερίδες ενημερώθηκαν!"});
