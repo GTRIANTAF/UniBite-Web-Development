@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require('../database_connection');
 
 router.get('/', (req, res) => {
-    const query = 'SELECT * FROM food_Posting WHERE creation_timestamp > NOW() - INTERVAL 48 HOUR';
+    const query = 'SELECT * FROM Listing WHERE creation_timestamp > NOW() - INTERVAL 48 HOUR';
 
     db.query(query, (err, results) => {
         if (err) {
@@ -18,7 +18,7 @@ router.post('/', (req, res) => {
     const { title, portions, description, pickup_location, pickup_time } = req.body;
 
     const query = `
-        INSERT INTO food_Posting (title, available_portions, description, pickup_location, pickup_time) 
+        INSERT INTO Listing (title, available_portions, description, pickup_location, pickup_time) 
         VALUES (?, ?, ?, ?, ?)
     `;
 
