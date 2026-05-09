@@ -24,6 +24,8 @@ CREATE TABLE Listing(
                         pickup_building VARCHAR(100) NOT NULL,
                         pickup_details TEXT,
                         pickup_time DATETIME NOT NULL,
+                        latitude DECIMAL(10,8) NOT NULL,
+                        longitude DECIMAL(10,8) NOT NULL,
                         total_portions INT NOT NULL,
                         available_portions INT NOT NULL,
                         status ENUM ('Active', 'Inactive', 'Deleted') NOT NULL DEFAULT 'Active',

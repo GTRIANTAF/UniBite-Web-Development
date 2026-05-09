@@ -197,86 +197,65 @@ router.get('/:id', (req, res) => {
 });
 
 // CREATE listing
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
     const {
-        cook_id,
-        title,
-        description,
-        photo_url,
-        allergens,
-        pickup_location,
-        pickup_building,
-        pickup_details,
-        pickup_time,
-        total_portions
+        cook_id, title, description, photo_url, allergens,
+        pickup_location, pickup_building, pickup_details, pickup_time, total_portions
     } = req.body;
 
-    if (
-        !cook_id ||
-        !title ||
-        !description ||
-        !pickup_location ||
-        !pickup_building ||
-        !pickup_time ||
-        !total_portions
-    ) {
-        return res.status(400).json({
-            error: 'Missing required fields'
-        });
+    if (!cook_id || !title || !description || !pickup_location || !pickup_building || !pickup_time || !total_portions) {
+        return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const cookId = Number(cook_id);
     const portions = Number(total_portions);
 
     if (!Number.isInteger(cookId) || cookId <= 0) {
-        return res.status(400).json({
-            error: 'Invalid cook id'
-        });
+        return res.status(400).json({ error: 'Invalid cook id' });
     }
 
     if (!isPositiveInteger(portions)) {
-        return res.status(400).json({
-            error: 'Total portions must be a positive integer'
-        });
+        return res.status(400).json({ error: 'Total portions must be a positive integer' });
     }
 
-    const checkCookQuery = `
-    SELECT user_id
-    FROM User
-    WHERE user_id = ?
-  `;
+    // Προεπιλογή: Κέντρο Πάτρας
+    let lat = 38.2462;
+    let lon = 21.7351;
+
+    try {
+        const addressQuery = encodeURIComponent(pickup_location.trim() + ", Πάτρα, Ελλάδα");
+        const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${addressQuery}&limit=1`;
+
+        const geoResponse = await fetch(geocodeUrl, {
+            headers: { 'User-Agent': 'UniBite_Student_Project_Upatras' }
+        });
+        const geoData = await geoResponse.json();
+
+        if (geoData && geoData.length > 0) {
+            lat = parseFloat(geoData[0].lat);
+            lon = parseFloat(geoData[0].lon);
+            console.log(`Geocoding Επιτυχές για '${pickup_location}': ${lat}, ${lon}`);
+        } else {
+            console.log(`Αποτυχία Geocoding για '${pickup_location}'. Χρήση προεπιλογής.`);
+        }
+    } catch (error) {
+        console.error("Σφάλμα API Nominatim:", error.message);
+    }
+
+    const checkCookQuery = `SELECT user_id FROM User WHERE user_id = ?`;
 
     db.query(checkCookQuery, [cookId], (cookErr, cookResults) => {
-        if (cookErr) {
-            return res.status(500).json({
-                error: 'Database error',
-                details: cookErr.message
-            });
-        }
-
-        if (cookResults.length === 0) {
-            return res.status(404).json({
-                error: 'Cook not found'
-            });
-        }
+        if (cookErr) return res.status(500).json({ error: 'Database error', details: cookErr.message });
+        if (cookResults.length === 0) return res.status(404).json({ error: 'Cook not found' });
 
         const query = `
       INSERT INTO Listing
       (
-        cook_id,
-        title,
-        description,
-        photo_url,
-        allergens,
-        pickup_location,
-        pickup_building,
-        pickup_details,
-        pickup_time,
-        total_portions,
-        available_portions,
-        status
+        cook_id, title, description, photo_url, allergens,
+        pickup_location, pickup_building, pickup_details, pickup_time,
+        latitude, longitude, total_portions, available_portions, status
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Active')
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Active')
     `;
 
         db.query(
@@ -291,20 +270,18 @@ router.post('/', (req, res) => {
                 pickup_building.trim(),
                 normalizeOptionalText(pickup_details),
                 pickup_time,
+                lat,
+                lon,
                 portions,
                 portions
             ],
             (err, result) => {
-                if (err) {
-                    return res.status(500).json({
-                        error: 'Database error',
-                        details: err.message
-                    });
-                }
+                if (err) return res.status(500).json({ error: 'Database error', details: err.message });
 
                 res.status(201).json({
                     message: 'Listing created successfully',
-                    listingId: result.insertId
+                    listingId: result.insertId,
+                    coordinates: { lat, lon }
                 });
             }
         );
@@ -312,7 +289,7 @@ router.post('/', (req, res) => {
 });
 
 // UPDATE listing
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
     const listingId = Number(req.params.id);
 
     if (!Number.isInteger(listingId) || listingId <= 0) {
@@ -387,6 +364,26 @@ router.put('/:id', (req, res) => {
         });
     }
 
+    let lat = 38.2462;
+    let lon = 21.7351;
+
+    try {
+        const addressQuery = encodeURIComponent(pickup_location.trim() + ", Πάτρα, Ελλάδα");
+        const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${addressQuery}&limit=1`;
+
+        const geoResponse = await fetch(geocodeUrl, {
+            headers: { 'User-Agent': 'UniBite_Student_Project_Upatras' }
+        });
+        const geoData = await geoResponse.json();
+
+        if (geoData && geoData.length > 0) {
+            lat = parseFloat(geoData[0].lat);
+            lon = parseFloat(geoData[0].lon);
+        }
+    } catch (error) {
+        console.error("Σφάλμα API Nominatim (Update):", error.message);
+    }
+
     const query = `
     UPDATE Listing
     SET
@@ -398,6 +395,8 @@ router.put('/:id', (req, res) => {
       pickup_building = ?,
       pickup_details = ?,
       pickup_time = ?,
+      latitude = ?,
+      longitude = ?,
       total_portions = ?,
       available_portions = ?,
       status = ?
@@ -417,6 +416,8 @@ router.put('/:id', (req, res) => {
             pickup_building.trim(),
             normalizeOptionalText(pickup_details),
             pickup_time,
+            lat,
+            lon,
             portions,
             available,
             listingStatus,

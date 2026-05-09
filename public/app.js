@@ -121,6 +121,7 @@ function loadFeed() {
     fetch(API_URL)
         .then(res => res.json())
         .then(data => {
+            console.log(data)
             // Check if array empty
             if (data.length === 0) {
                 feedContainer.innerHTML = '<h3>Δεν υπάρχουν διαθέσιμες αγγελίες.</h3>';
