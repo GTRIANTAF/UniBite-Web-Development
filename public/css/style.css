@@ -7,6 +7,8 @@
     --text-light: #6c757d;
 }
 
+*{box-sizing: border-box;}
+
 body {
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--bg-color);
@@ -19,6 +21,7 @@ body {
 
 /* Mobile first layout */
 
+/* Navigation CSS */
 .navigation {
     position: fixed;
     bottom: 0;
@@ -31,6 +34,10 @@ body {
     padding: 10px 0;
     box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
     z-index: 1000;
+}
+
+#map {
+    height: 470px;
 }
 
 .logo { display: none; }
@@ -66,31 +73,6 @@ body {
     margin-top: 4px;
     font-weight: 500;
 }
-
-/* Το κενό στη μέση για να κάτσει το στρογγυλό κουμπί */
-.nav-spacer { width: 60px; }
-
-/* Μεγάλο Πορτοκαλί Κουμπί */
-.fab-post {
-    position: absolute;
-    bottom: 25px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 60px;
-    height: 60px;
-    box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s;
-}
-.fab-post:active { transform: translateX(-50%) scale(0.95); }
-.fab-text { display: none; }
 
 /* Main Content Area */
 .main-content {
@@ -135,8 +117,7 @@ body {
     color: var(--primary-color);
 }
 
-/* glass (floating) info card */
-
+/* Glass (floating) info card */
 .feed-container {
     display: flex;
     flex-direction: column;
@@ -147,6 +128,19 @@ body {
     background: transparent; /* Διάφανο φόντο, η κάρτα "χτίζεται" από τα στοιχεία της */
     display: flex;
     flex-direction: column;
+}
+
+/* sold out food cards */
+.food-card.noAvailability {
+    opacity: 0.6;
+    filter: grayscale(0.8); /* Αφαιρεί το χρώμα */
+    pointer-events: none; /* Απενεργοποιεί τα κλικ σε όλη την κάρτα*/
+}
+
+.food-card.noAvailability .btn-reserve {
+    background-color: #888 !important; /* Γκρι χρώμα στο κουμπί */
+    cursor: not-allowed;
+    pointer-events: auto; /* Επιτρέπει το hover για να φαίνεται το απαγορευτικό εικονίδιο */
 }
 
 .card-img-container {
@@ -176,7 +170,7 @@ body {
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
-/* Το γυάλινο πλαίσιο πληροφοριών που ανεβαίνει πάνω στην εικόνα */
+/* Το γυάλινο πλαίσιο που ανεβαίνει πάνω στην εικόνα */
 .card-info {
     position: relative;
     margin-top: -50px; /* Το τραβάει πάνω από την εικόνα */
@@ -210,6 +204,7 @@ body {
 
 .cook-name { font-size: 14px; font-weight: 500; }
 
+/* Reserve Button */
 .btn-reserve {
     background-color: var(--primary-color);
     color: white;
@@ -223,6 +218,419 @@ body {
 .btn-reserve:hover { background-color: #e64a19; }
 .btn-reserve:active { transform: scale(0.95); }
 
-.hidden {
-    display: none;
+/* Slider CSS */
+.range-container {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin: 20px 0;
 }
+
+.range-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.range-badge {
+    background: #2ecc71;
+    color: white;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.modern-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 5px;
+    outline: none;
+}
+
+.modern-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #2ecc71;
+    border: 3px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+}
+
+.modern-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    background: #27ae60;
+}
+
+/* Profile CSS */
+#profile-view {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    max-width: 600px;
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease;
+}
+
+.profile-header {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    background-color: #ffeae3;
+    color: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px auto;
+    box-shadow: 0 4px 15px rgba(255, 87, 34, 0.15);
+}
+
+.profile-avatar .material-icons {
+    font-size: 52px;
+}
+
+.profile-header h2 {
+    margin: 0 0 5px 0;
+    color: var(--text-dark);
+    font-size: 24px;
+}
+
+.profile-header p {
+    margin: 0;
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+.points-card {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #ff8a65 100%);
+    border-radius: 16px;
+    padding: 25px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 8px 20px rgba(255, 87, 34, 0.3);
+}
+
+.points-info h3 {
+    margin: 0 0 5px 0;
+    font-size: 18px;
+}
+
+.points-info p {
+    margin: 0;
+    font-size: 13px;
+    opacity: 0.9;
+    max-width: 180px;
+}
+
+.points-badge {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    width: 75px;
+    height: 75px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.points-badge span:first-child {
+    font-size: 26px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.points-badge .material-icons {
+    font-size: 18px;
+    margin-top: 2px;
+}
+
+.profile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.switch-role-box {
+    background-color: #e8f5e9;
+    padding: 20px;
+    border-radius: 16px;
+    text-align: center;
+}
+
+.switch-role-box p {
+    margin: 0 0 15px 0;
+    color: #2e7d32;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.switch-btn {
+    background-color: var(--secondary-color);
+    color: white;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.switch-btn:active { transform: scale(0.98); }
+
+.logout-btn {
+    background-color: transparent;
+    color: #dc3545;
+    border: 2px solid #dc3545;
+}
+
+.logout-btn:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Orders CSS */
+/* ==========================================
+   ORDERS VIEW STYLES
+   ========================================== */
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-bottom: 20px;
+}
+
+.order-card {
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-left: 5px solid var(--text-light); /* Default χρώμα */
+}
+
+.order-card.completed { border-left-color: var(--secondary-color); }
+.order-card.pending { border-left-color: var(--accent-color); }
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+}
+
+.order-date { font-size: 12px; color: var(--text-light); }
+
+.order-badge {
+    font-size: 11px;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+.order-badge.completed { background: #E8F5E9; color: #2E7D32; }
+.order-badge.pending { background: #FFF8E1; color: #F57F17; }
+
+.order-body { display: flex; align-items: center; gap: 15px; margin-top: 5px; }
+
+.order-icon {
+    background: var(--bg-color);
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+}
+
+.order-info h4 { margin: 0 0 4px 0; font-size: 16px; color: var(--text-dark); }
+.order-info p { margin: 0; font-size: 13px; color: var(--text-light); }
+
+.order-actions { margin-top: 5px; text-align: right; }
+
+.btn-review {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 13px;
+    transition: 0.2s;
+}
+.btn-review:hover { background: #e64a19; }
+
+/* --- MODAL ΑΞΙΟΛΟΓΗΣΗΣ (Popup) --- */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal-content {
+    background: white;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 16px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.modal-content h3 { margin: 0 0 5px 0; color: var(--primary-color); }
+.modal-content p { color: var(--text-light); font-size: 14px; margin-bottom: 20px;}
+
+.star-rating {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 20px;
+    color: #FFD700; /* Χρυσό χρώμα για τα αστέρια */
+    cursor: pointer;
+}
+
+.star-rating .material-icons { font-size: 36px; transition: 0.2s; }
+
+#review-comments {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    font-family: inherit;
+    resize: none;
+    margin-bottom: 20px;
+}
+
+.modal-actions { display: flex; gap: 10px; }
+.modal-actions button {
+    flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer;
+}
+.btn-cancel { background: #f1f3f5; color: var(--text-dark); }
+.btn-submit { background: var(--secondary-color); color: white; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- DESKTOP RESIZING --- */
+
+@media (min-width: 768px) {
+    body { flex-direction: row; }
+
+    #map {
+        width: 100%;
+        height: 650px;
+        border: 2px solid #ccc;
+        border-radius: 8px;
+        z-index: 1;
+        margin-bottom: 20px;
+    }
+
+    /* Μετατροπή της Bottom Bar σε Αριστερό Sidebar */
+    .navigation {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 250px;
+        height: 100vh;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: 30px 20px;
+    }
+
+    .logo {
+        display: block;
+        font-size: 28px;
+        font-weight: bold;
+        color: var(--primary-color);
+        margin-bottom: 40px;
+        text-align: center;
+    }
+
+    .nav-spacer { display: none; } /* Κρύβουμε το κενό του κινητού */
+
+    .top-header h2 { display: none; }
+
+    .nav-links {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .nav-links a {
+        flex-direction: row;
+        font-size: 16px;
+        padding: 12px;
+        border-radius: 8px;
+    }
+    .nav-links a:hover { background-color: var(--bg-color); }
+
+    .nav-text {
+        margin-top: 0;
+        margin-left: 15px;
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    /* Ρύθμιση του κεντρικού περιεχομένου για να μην κρύβεται πίσω από το Sidebar */
+    .main-content {
+        margin-left: 250px;
+        width: calc(100% - 250px);
+        padding: 40px;
+    }
+
+    .view-toggle { margin: 0 0 30px 0; }
+
+    /* Διάταξη πλέγματος (Grid) για τις κάρτες στο Desktop */
+    .feed-container {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .food-card {
+        width: calc(50% - 10px);
+        flex-direction: column;
+    }
+
+    .card-img-container { width: 100%; }
+    .card-info { width: auto; }
+}
+
+.hidden-view { display: none !important;}

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniBite - Explore</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+<nav class="navigation">
+    <div class="logo">UniBite</div>
+
+    <ul class="nav-links">
+        <li><a href="#" id="nav-home" class="active" onclick="switchView('home')"><span class="material-icons">home</span> <span class="nav-text">Home</span></a></li>
+        <li><a href="#" id="nav-orders" onclick="switchView('orders')"><span class="material-icons">receipt_long</span> <span class="nav-text">Orders</span></a></li>
+        <li><a href="#" id="nav-profile" onclick="switchView('profile')"><span class="material-icons">person</span> <span class="nav-text">Profile</span></a></li>
+    </ul>
+</nav>
+
+<main class="main-content">
+
+    <section id="home-view">
+        <header class="top-header">
+            <h2>UniBite</h2>
+        </header>
+
+        <div class="view-toggle">
+            <button id="list-view-btn" class="toggle-btn active"><span class="material-icons">view_list</span> List</button>
+            <button id="map-view-btn" class="toggle-btn"><span class="material-icons">map</span> Map</button>
+        </div>
+
+        <div class="range-container">
+            <div class="range-header">
+                <span>Ακτίνα Αναζήτησης</span>
+                <span id="range-value" class="range-badge">5 km</span>
+            </div>
+            <input type="range" id="distance-range" min="1" max="20" value="5" class="modern-slider">
+        </div>
+
+        <div id="map" class="hidden-view"></div>
+        <div class="feed-container" id="dynamic-feed">
+        </div>
+    </section>
+
+    <section id="orders-view" class="hidden-view">
+        <header class="top-header" style="margin-bottom: 10px;">
+            <h2>Οι Παραγγελίες μου</h2>
+        </header>
+
+        <div class="orders-list" id="orders-container">
+        </div>
+
+        <div id="review-modal" class="modal-overlay hidden-view">
+            <div class="modal-content">
+                <h3 id="review-modal-title">Αξιολόγηση Παραγγελίας</h3>
+                <p>Πώς σου φάνηκε το φαγητό;</p>
+
+                <div class="star-rating" id="star-rating-container">
+                    <span class="material-icons star" data-value="1">star_border</span>
+                    <span class="material-icons star" data-value="2">star_border</span>
+                    <span class="material-icons star" data-value="3">star_border</span>
+                    <span class="material-icons star" data-value="4">star_border</span>
+                    <span class="material-icons star" data-value="5">star_border</span>
+                </div>
+
+                <textarea id="review-comments" placeholder="Γράψε ένα σχόλιο (προαιρετικό)..." rows="3"></textarea>
+
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="closeReviewModal()">Ακύρωση</button>
+                    <button class="btn-submit" onclick="submitReview()">Υποβολή</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="profile-view" class="hidden-view">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <span class="material-icons">person</span>
+            </div>
+            <h2 id="profile-name">Consumer_Test</h2>
+            <p id="profile-email">consumer@upatras.gr</p>
+        </div>
+
+        <div class="points-card">
+            <div class="points-info">
+                <h3>Διαθέσιμοι Πόντοι</h3>
+                <p>Εξαργύρωσέ τους για να κλείσεις μερίδες από συμφοιτητές σου!</p>
+            </div>
+            <div class="points-badge">
+                <span id="profile-points">5</span>
+                <span class="material-icons">stars</span>
+            </div>
+        </div>
+
+        <div class="profile-actions">
+            <div class="switch-role-box">
+                <p>Θέλεις να μαζέψεις περισσότερους πόντους;</p>
+                <button class="action-btn switch-btn" id="btn-become-cook">
+                    <span class="material-icons">soup_kitchen</span>
+                    Γίνε Μάγειρας
+                </button>
+            </div>
+
+            <button class="action-btn logout-btn" id="btn-logout">
+                <span class="material-icons">logout</span>
+                Αποσύνδεση
+            </button>
+        </div>
+    </section>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
