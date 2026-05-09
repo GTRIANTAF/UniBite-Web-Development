@@ -42,6 +42,9 @@ CREATE TABLE Request(
     status ENUM ('Pending', 'Approved', 'Rejected') NOT NULL DEFAULT 'Pending',
     delivery_status ENUM ('Pending', 'Picked_Up', 'No_Show') NOT NULL DEFAULT 'Pending',
     creation_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    decision_timestamp TIMESTAMP NULL,
+    pickup_timestamp TIMESTAMP NULL,
+    rating_penalty_applied BOOLEAN NOT NULL DEFAULT FALSE,
     PRIMARY KEY(request_id),
     FOREIGN KEY(listing_id) REFERENCES Listing(listing_id),
     FOREIGN KEY(consumer_id) REFERENCES User(user_id)
@@ -52,9 +55,15 @@ CREATE TABLE Rating(
     request_id INT NOT NULL UNIQUE,
     score ENUM ('1','2','3','4','5') NOT NULL,
     rated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    bonus_awarded BOOLEAN NOT NULL DEFAULT FALSE,
     PRIMARY KEY(rating_id),
     FOREIGN KEY (request_id) REFERENCES Request(request_id)
 );
+
+CREATE INDEX idx_listing_cook_id ON Listing(cook_id);
+CREATE INDEX idx_request_listing_id ON Request(listing_id);
+CREATE INDEX idx_request_consumer_id ON Request(consumer_id);
+CREATE INDEX idx_rating_request_id ON Rating(request_id);
 
 INSERT INTO User (username, email, points, is_admin)
 VALUES
@@ -102,6 +111,16 @@ VALUES
     'Κεντρική είσοδος.',
     DATE_ADD(NOW(), INTERVAL 3 HOUR),
     2,
-    0,
-    'Inactive'
+    1,
+    'Active'
 );
+
+INSERT INTO Request (
+    listing_id,
+    consumer_id,
+    status,
+    delivery_status
+)
+VALUES
+(1, 2, 'Pending', 'Pending'),
+(2, 2, 'Approved', 'Pending');
