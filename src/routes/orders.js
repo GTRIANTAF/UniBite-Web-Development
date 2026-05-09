@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require('../database_connection');
 
 router.get('/', (req, res) => {
-    const query = 'SELECT * FROM Request JOIN Listing ON Request.listing_id = food_Posting.listing_id';
+    const query = 'SELECT * FROM Request JOIN Listing ON Request.listing_id = Listing.listing_id';
 
     db.query(query, (err, results) => {
         if (err) {
