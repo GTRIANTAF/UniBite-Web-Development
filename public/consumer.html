@@ -39,7 +39,7 @@
                 <span>Ακτίνα Αναζήτησης</span>
                 <span id="range-value" class="range-badge">5 km</span>
             </div>
-            <input type="range" id="distance-range" min="1" max="20" value="5" class="modern-slider">
+            <label for="distance-range"></label><input type="range" id="distance-range" min="1" max="20" value="5" class="modern-slider">
         </div>
 
         <div id="map" class="hidden-view"></div>
@@ -67,8 +67,6 @@
                     <span class="material-icons star" data-value="4">star_border</span>
                     <span class="material-icons star" data-value="5">star_border</span>
                 </div>
-
-                <textarea id="review-comments" placeholder="Γράψε ένα σχόλιο (προαιρετικό)..." rows="3"></textarea>
 
                 <div class="modal-actions">
                     <button class="btn-cancel" onclick="closeReviewModal()">Ακύρωση</button>

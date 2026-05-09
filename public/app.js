@@ -3,10 +3,12 @@ const postButton = document.querySelector('.fab-post');
 
 const map = L.map('map').setView([38.2466, 21.7346], 13);
 const markersLayer = L.layerGroup().addTo(map);
+let userLocation = {lat: 38.2466, lng: 21.7346};
+let userMarker = null
 
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 19,
-    attribution: '© OpenStreetMap contributors © CARTO'
+    attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
 const listBtn = document.getElementById('list-view-btn');
@@ -25,6 +27,11 @@ function toggleView(showMap) {
 
         mapBtn.classList.add('active');
         listBtn.classList.remove('active');
+
+        setTimeout(() => {
+            map.invalidateSize();
+            map.setView([userLocation.lat, userLocation.lng], 13);
+        }, 100);
     } else {
         // Show List - Hidden map
         mapDiv.classList.add('hidden-view');
@@ -53,8 +60,12 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 }
 
 function getUserLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
+    if (!navigator.geolocation) {
+        loadFeed();
+        return;
+    }
+    navigator.geolocation.getCurrentPosition(
+        position => {
             userLocation = {
                 lat: position.coords.latitude,
                 lng: position.coords.longitude
@@ -62,21 +73,22 @@ function getUserLocation() {
 
             map.setView([userLocation.lat, userLocation.lng], 13);
 
-            // Add a marker for the user's location
-            L.circle([userLocation.lat, userLocation.lng], {
+            if (userMarker) map.removeLayer(userMarker);
+            userMarker = L.circle([userLocation.lat, userLocation.lng], {
                 radius: 200,
                 color: '#2ecc71',
                 fillColor: '#2ecc71',
                 fillOpacity: 0.5
             }).addTo(map).bindPopup("You are here!");
+
             loadFeed();
-        }, error => {
-            console.error("Άρνηση τοποθεσίας, χρησιμοποιούμε προεπιλογή Πάτρα.");
+        },
+        error => {
+            console.error("Location denied, using default (Patras).", error);
             loadFeed();
-        });
-    } else {
-        loadFeed();
-    }
+        },
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
+    );
 }
 
 function filterByDistance(maxKm) {
@@ -190,37 +202,49 @@ function formatPickupTime(dateString) {
 
 function loadOrders() {
     const ordersContainer = document.getElementById('orders-container');
+    if (!ordersContainer) return;
+
     ordersContainer.innerHTML = '<p>Φόρτωση...</p>';
 
-    fetch(`/api/orders`)
+    const currentUserId = 2;
+
+    fetch(`/api/orders?userId=${currentUserId}`)
         .then(res => res.json())
         .then(orders => {
-            console.log(orders);
+            console.log("Δεδομένα Παραγγελιών:", orders);
+
             if (!orders || orders.length === 0) {
                 ordersContainer.innerHTML = '<h3>Δεν έχεις παραγγελίες ακόμα.</h3>';
                 return;
             }
 
             ordersContainer.innerHTML = '';
+
             orders.forEach(order => {
-                const status = (order.status || 'pending').toLowerCase();
+                const statusClass = order.statusClass || 'pending';
+                const statusText = order.statusText || 'Σε αναμονή';
+
                 const card = document.createElement('article');
-                card.className = `order-card ${status}`;
+                card.className = `order-card ${statusClass}`;
+
                 card.innerHTML = `
                     <div class="order-header">
-                        <span class="order-date">${formatPickupTime(order.created_at)}</span>
-                        <span class="order-badge ${status}">${status}</span>
+                        <span class="order-date">${formatPickupTime(order.date)}</span>
+                        <span class="order-badge ${statusClass}">${statusText}</span>
                     </div>
                     <div class="order-body">
                         <div class="order-icon"><span class="material-icons">restaurant</span></div>
                         <div class="order-info">
                             <h4>${order.title}</h4>
-                            <p>${order.pickup_location || ''}</p>
+                            <p>Από: ${order.cook}</p>
                         </div>
                     </div>
-                    ${status === 'completed' ? `
+                    ${order.needsReview === 1 ? `
                     <div class="order-actions">
-                        <button class="btn-review" data-order-id="${order.request_id}">Αξιολόγηση</button>
+                        <button class="btn-review" onclick="openReviewModal(${order.id}, '${order.title}')">
+                            <span class="material-icons" style="font-size: 14px; vertical-align: middle;">star</span> 
+                            Αξιολόγηση
+                        </button>
                     </div>` : ''}
                 `;
                 ordersContainer.appendChild(card);
@@ -298,5 +322,4 @@ document.getElementById('distance-range').addEventListener('input', (e) => {
 listBtn.addEventListener('click', () => toggleView(false));
 mapBtn.addEventListener('click', () => toggleView(true));
 
-loadFeed();
 getUserLocation();

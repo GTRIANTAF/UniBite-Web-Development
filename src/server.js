@@ -6,7 +6,6 @@ const PORT = 3000;
 // Εισαγωγή των Routes
 const listingsRouter = require('./routes/listings');
 const requestRouter = require('./routes/request');
-const ratingRouter = require('./routes/rating');
 const ordersRouter = require('./routes/orders');
 
 // Middleware
@@ -20,7 +19,6 @@ app.use(express.json());
 
 app.use('/api/listings', listingsRouter);
 app.use('/api/request', requestRouter);
-app.use('/api/rating', ratingRouter);
 app.use('/api/orders', ordersRouter);
 
 app.listen(PORT, () => {
