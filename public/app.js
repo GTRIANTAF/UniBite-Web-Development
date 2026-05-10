@@ -392,7 +392,7 @@ feedContainer.addEventListener('click', async (e) => {
             const response = await fetch('/api/request', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ listingId: listingId, consumer_id: CURRENT_USER_ID })
+                body: JSON.stringify({ listing_id: listingId, consumer_id: CURRENT_USER_ID })
             });
 
             const data = await response.json();
