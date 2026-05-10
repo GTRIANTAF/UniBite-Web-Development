@@ -7,6 +7,8 @@ const PORT = 3000;
 const listingsRouter = require('./routes/listings');
 const requestRouter = require('./routes/request');
 const ordersRouter = require('./routes/orders');
+const ratingsRouter = require('./routes/ratings');
+const usersRouter = require('./routes/users');
 
 // Middleware
 app.get('/', (req, res) => {
@@ -20,6 +22,8 @@ app.use(express.json());
 app.use('/api/listings', listingsRouter);
 app.use('/api/request', requestRouter);
 app.use('/api/orders', ordersRouter);
+app.use('/api/ratings', ratingsRouter);
+app.use('/api/users', usersRouter);
 
 app.listen(PORT, () => {
     console.log(`Ο server τρέχει στο http://localhost:${PORT}`);

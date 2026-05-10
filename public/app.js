@@ -1,5 +1,5 @@
+const CURRENT_USER_ID = 2;
 const feedContainer = document.querySelector('#dynamic-feed');
-const postButton = document.querySelector('.fab-post');
 
 const map = L.map('map').setView([38.2466, 21.7346], 13);
 const markersLayer = L.layerGroup().addTo(map);
@@ -16,7 +16,8 @@ const mapBtn = document.getElementById('map-view-btn');
 const mapDiv = document.getElementById('map');
 const feedDiv = document.getElementById('dynamic-feed');
 
-const API_URL = '/api/listings';
+let currentOrderIdToReview = null;
+let currentRating = 0;
 
 // Map function
 function toggleView(showMap) {
@@ -118,7 +119,7 @@ function filterByDistance(maxKm) {
 function loadFeed() {
     feedContainer.innerHTML = '';
 
-    fetch(API_URL)
+    fetch('/api/listings')
         .then(res => res.json())
         .then(data => {
             console.log(data)
@@ -207,9 +208,7 @@ function loadOrders() {
 
     ordersContainer.innerHTML = '<p>Φόρτωση...</p>';
 
-    const currentUserId = 2;
-
-    fetch(`/api/orders?userId=${currentUserId}`)
+    fetch(`/api/orders?userId=${CURRENT_USER_ID}`)
         .then(res => res.json())
         .then(orders => {
             console.log("Δεδομένα Παραγγελιών:", orders);
@@ -257,6 +256,111 @@ function loadOrders() {
         });
 }
 
+
+// --- Functions Διαχείρισης Modal & Stars ---
+function openReviewModal(orderId, orderTitle) {
+    currentOrderIdToReview = orderId;
+    currentRating = 0;
+
+    const modal = document.getElementById('review-modal');
+    const modalTitle = document.getElementById('review-modal-title');
+
+    if (modal) {
+        modalTitle.innerText = `Αξιολόγηση: ${orderTitle}`;
+        modal.classList.remove('hidden-view');
+        updateStars(0);
+        document.getElementById('review-comments').value = '';
+    }
+}
+
+function closeReviewModal() {
+    const modal = document.getElementById('review-modal');
+    if (modal) {
+        modal.classList.add('hidden-view');
+    }
+    currentOrderIdToReview = null;
+    currentRating = 0;
+}
+
+function updateStars(rating) {
+    const stars = document.querySelectorAll('.star-rating .star');
+    stars.forEach(star => {
+        const val = parseInt(star.getAttribute('data-value'));
+        if (val <= rating) {
+            star.innerText = 'star';
+            star.classList.add('active');
+        } else {
+            star.innerText = 'star_border';
+            star.classList.remove('active');
+        }
+    });
+}
+
+async function submitReview() {
+    // 1. Έλεγχος αν ο χρήστης επέλεξε αστέρια
+    if (!currentRating || currentRating === 0) {
+        alert("Παρακαλώ επίλεξε βαθμολογία (αστέρια) πριν την υποβολή!");
+        return;
+    }
+
+    // Δεδομένα προς αποστολή - Συμβατά με το API της Μαρίας
+    const reviewData = {
+        request_id: currentOrderIdToReview,
+        consumer_id: CURRENT_USER_ID,
+        score: currentRating,
+    };
+
+    try {
+        const response = await fetch('/api/ratings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(reviewData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert("Ευχαριστούμε! " + result.message);
+            closeReviewModal();
+            loadOrders();
+        } else {
+            alert("Σφάλμα: " + result.error);
+        }
+
+    } catch (error) {
+        console.error("Connection error:", error);
+        alert("Υπήρξε πρόβλημα στη σύνδεση με τον διακομιστή.");
+    }
+}
+
+// --- Profile Loader ---
+function loadProfile() {
+    console.log("Αναζήτηση προφίλ για τον χρήστη:", CURRENT_USER_ID);
+
+    const nameElem = document.getElementById('profile-name');
+    const emailElem = document.getElementById('profile-email');
+    const pointsElem = document.getElementById('profile-points');
+
+    fetch(`/api/users/${CURRENT_USER_ID}`)
+        .then(res => {
+            if (!res.ok) throw new Error("Ο χρήστης δεν βρέθηκε");
+            return res.json();
+        })
+        .then(userData => {
+            if (nameElem) nameElem.innerText = userData.username;
+            if (emailElem) emailElem.innerText = userData.email;
+            if (pointsElem) pointsElem.innerText = userData.points;
+        })
+        .catch(err => {
+            console.error("Σφάλμα φόρτωσης προφίλ:", err);
+            // Fallback σε περίπτωση που πέσει ο server
+            if (nameElem) nameElem.innerText = "Άγνωστος Χρήστης";
+            if (pointsElem) pointsElem.innerText = "-";
+        });
+}
+
 function switchView(viewName) {
     // 1. Κρύβουμε όλα
     document.getElementById('home-view').classList.add('hidden-view');
@@ -272,13 +376,9 @@ function switchView(viewName) {
     document.getElementById('nav-profile').classList.remove('active');
     document.getElementById('nav-' + viewName).classList.add('active');
 
-    if (viewName === 'home' && typeof map !== 'undefined') {
-        setTimeout(() => { map.invalidateSize(); }, 100);
-    } else if (viewName === 'orders') {
-        if (typeof loadOrders === "function") loadOrders();
-    } else if (viewName === 'profile') {
-        if (typeof loadProfile === "function") loadProfile();
-    }
+    if (viewName === 'home') setTimeout(() => { map.invalidateSize(); }, 100);
+    else if (viewName === 'orders') loadOrders();
+    else if (viewName === 'profile') loadProfile();
 }
 
 // -- Event Listeners --
@@ -287,13 +387,12 @@ feedContainer.addEventListener('click', async (e) => {
         e.preventDefault();
 
         const listingId = e.target.getAttribute('data-listing-id');
-        const userId = 1;
 
         try {
             const response = await fetch('/api/request', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ listingId: listingId, userId: userId })
+                body: JSON.stringify({ listingId: listingId, consumer_id: CURRENT_USER_ID })
             });
 
             const data = await response.json();
@@ -312,6 +411,16 @@ feedContainer.addEventListener('click', async (e) => {
             alert("Υπήρξε πρόβλημα με τον server.");
         }
     }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const stars = document.querySelectorAll('.star-rating .star');
+    stars.forEach(star => {
+        star.addEventListener('click', () => {
+            currentRating = parseInt(star.getAttribute('data-value'));
+            updateStars(currentRating);
+        });
+    });
 });
 
 document.getElementById('distance-range').addEventListener('input', (e) => {
