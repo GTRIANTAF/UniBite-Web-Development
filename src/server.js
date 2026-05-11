@@ -5,12 +5,18 @@ const PORT = 3000;
 
 // Εισαγωγή των Routes
 const listingsRouter = require('./routes/listings');
+const requestsRouter = require('./routes/requests');
+const ratingsRouter = require('./routes/ratings');
+const adminRouter = require('./routes/admin');
 
 // Middleware
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.json());
 
 app.use('/api/listings', listingsRouter);
+app.use('/api/requests', requestsRouter);
+app.use('/api/ratings', ratingsRouter);
+app.use('/api/admin', adminRouter);
 
 app.listen(PORT, () => {
     console.log(`Ο server τρέχει στο http://localhost:${PORT}`);
