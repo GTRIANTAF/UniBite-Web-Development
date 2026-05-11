@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniBite - Kitchen</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navigation">
+    <div class="logo">UniBite</div>
+
+    <ul class="nav-links">
+        <li>
+            <a href="consumer.html">
+                <span class="material-icons">home</span>
+                <span class="nav-text">Feed</span>
+            </a>
+        </li>
+        <li>
+            <a href="cook.html" class="active">
+                <span class="material-icons">soup_kitchen</span>
+                <span class="nav-text">Kitchen</span>
+            </a>
+        </li>
+        <li>
+            <a href="start.html">
+                <span class="material-icons">logout</span>
+                <span class="nav-text">Exit</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<main class="main-content cook-page">
+
+    <header class="cook-header">
+        <div>
+            <h1>Νέα Αγγελία Φαγητού</h1>
+            <p>Καταχώρησε διαθέσιμες μερίδες και στοιχεία παραλαβής.</p>
+        </div>
+    </header>
+
+    <form id="listing-form" class="listing-form">
+
+        <section class="form-section">
+            <h2>Στοιχεία Αγγελίας</h2>
+
+            <label for="title">Τίτλος</label>
+            <input type="text" id="title" placeholder="π.χ. Σπιτικά μακαρόνια" required>
+
+            <label for="description">Σημειώσεις / Περιγραφή</label>
+            <textarea id="description" rows="4" placeholder="Περιγραφή φαγητού, υλικά, ποσότητα..." required></textarea>
+
+            <label for="photo_url">Φωτογραφία URL</label>
+            <input type="url" id="photo_url" placeholder="https://example.com/photo.jpg">
+
+            <label for="total_portions">Μερίδες</label>
+            <input type="number" id="total_portions" min="1" placeholder="π.χ. 3" required>
+        </section>
+
+        <section class="form-section">
+            <h2>Στοιχεία Παραλαβής</h2>
+
+            <label for="pickup_location">Ακριβές σημείο</label>
+            <input type="text" id="pickup_location" placeholder="π.χ. Πανεπιστήμιο Πατρών" required>
+
+            <label for="pickup_building">Κτίριο</label>
+            <input type="text" id="pickup_building" placeholder="π.χ. Βιβλιοθήκη" required>
+
+            <label for="pickup_details">Οδηγίες παραλαβής</label>
+            <textarea id="pickup_details" rows="3" placeholder="π.χ. Είσοδος βιβλιοθήκης, δίπλα στα σκαλιά"></textarea>
+
+            <label for="pickup_time">Ώρα παραλαβής</label>
+            <input type="datetime-local" id="pickup_time" required>
+        </section>
+
+        <section class="form-section">
+            <h2>Αλλεργιογόνα</h2>
+
+            <div class="allergen-grid">
+                <label><input type="checkbox" value="Gluten"> Γλουτένη</label>
+                <label><input type="checkbox" value="Crustaceans"> Καρκινοειδή</label>
+                <label><input type="checkbox" value="Eggs"> Αυγά</label>
+                <label><input type="checkbox" value="Fish"> Ψάρια</label>
+                <label><input type="checkbox" value="Peanuts"> Φιστίκια</label>
+                <label><input type="checkbox" value="Soybeans"> Σόγια</label>
+                <label><input type="checkbox" value="Milk"> Γάλα</label>
+                <label><input type="checkbox" value="Nuts"> Ξηροί καρποί</label>
+                <label><input type="checkbox" value="Celery"> Σέλινο</label>
+                <label><input type="checkbox" value="Mustard"> Μουστάρδα</label>
+                <label><input type="checkbox" value="Sesame"> Σουσάμι</label>
+                <label><input type="checkbox" value="Sulphites"> Θειώδη</label>
+                <label><input type="checkbox" value="Lupin"> Λούπινο</label>
+                <label><input type="checkbox" value="Molluscs"> Μαλάκια</label>
+            </div>
+        </section>
+
+        <div id="form-message" class="form-message hidden-view"></div>
+
+        <button type="submit" class="submit-listing-btn">
+            <span class="material-icons">add_circle</span>
+            Δημιουργία Αγγελίας
+        </button>
+
+    </form>
+
+</main>
+
+<script src="cook.js"></script>
+</body>
+</html>
