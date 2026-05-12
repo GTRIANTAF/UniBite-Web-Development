@@ -9,6 +9,8 @@ const requestsRouter = require('./routes/requests');
 const ratingsRouter = require('./routes/ratings');
 const adminRouter = require('./routes/admin');
 const ordersRouter = require('./routes/orders');
+const authRouter = require('./routes/auth');
+const usersRouter = require('./routes/users');
 
 // Middleware
 app.get('/', (req, res) => {
@@ -23,6 +25,8 @@ app.use('/api/requests', requestsRouter);
 app.use('/api/ratings', ratingsRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/orders', ordersRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/users', usersRouter);
 
 app.listen(PORT, () => {
     console.log(`Ο server τρέχει στο http://localhost:${PORT}`);
