@@ -9,10 +9,11 @@ const requestRouter = require('./routes/requests');
 const ordersRouter = require('./routes/orders');
 const ratingsRouter = require('./routes/ratings');
 const usersRouter = require('./routes/users');
+const authRouter = require('./routes/auth');
 
 // Middleware
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/start.html'));
+    res.sendFile(path.join(__dirname, '../public/login.html'));
 });
 
 app.use(express.static(path.join(__dirname, '../public')));
@@ -24,6 +25,7 @@ app.use('/api/requests', requestRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/ratings', ratingsRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/auth', authRouter);
 
 app.listen(PORT, () => {
     console.log(`Ο server τρέχει στο http://localhost:${PORT}`);

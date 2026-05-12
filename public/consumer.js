@@ -1,5 +1,9 @@
-const CURRENT_USER_ID = 2;
+const CURRENT_USER_ID = localStorage.getItem('unibite_user_id');
 const feedContainer = document.querySelector('#dynamic-feed');
+
+if (!CURRENT_USER_ID) {
+    window.location.href = 'login.html';
+}
 
 const map = L.map('map').setView([38.2466, 21.7346], 13);
 const markersLayer = L.layerGroup().addTo(map);
@@ -15,6 +19,9 @@ const listBtn = document.getElementById('list-view-btn');
 const mapBtn = document.getElementById('map-view-btn');
 const mapDiv = document.getElementById('map');
 const feedDiv = document.getElementById('dynamic-feed');
+
+const logoutBtn = document.getElementById('btn-logout');
+const btnBecomeCook = document.getElementById('btn-become-cook');
 
 let currentOrderIdToReview = null;
 let currentRating = 0;
@@ -431,5 +438,18 @@ document.getElementById('distance-range').addEventListener('input', (e) => {
 
 listBtn.addEventListener('click', () => toggleView(false));
 mapBtn.addEventListener('click', () => toggleView(true));
+
+document.getElementById('btn-logout').addEventListener('click',(e) => {
+    const confirmLogout = confirm("Είσαι σίγουρος ότι θέλεις να αποσυνδεθείς;");
+
+    if (confirmLogout) {
+        localStorage.removeItem('unibite_token');
+        localStorage.removeItem('unibite_user_id');
+
+        window.location.href = '/';
+    }
+});
+
+document.getElementById('btn-become-cook').addEventListener('click', () => { window.location.href = 'cook.html';})
 
 getUserLocation();

@@ -7,6 +7,7 @@ CREATE TABLE User(
                      user_id INT AUTO_INCREMENT,
                      username VARCHAR(50) NOT NULL,
                      email VARCHAR(255) NOT NULL UNIQUE,
+                     password_hash VARCHAR(255) NOT NULL,
                      points INT NOT NULL DEFAULT 5,
                      is_admin BOOLEAN NOT NULL DEFAULT FALSE,
                      PRIMARY KEY(user_id),
