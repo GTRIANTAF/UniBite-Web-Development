@@ -13,7 +13,7 @@ CREATE TABLE User(
     CHECK (points >= 0)
 );
 
-CREATE TABLE Listing(
+CREATE TABLE food_Posting(
     listing_id INT AUTO_INCREMENT,
     cook_id INT NOT NULL,
     title VARCHAR(255) NOT NULL,

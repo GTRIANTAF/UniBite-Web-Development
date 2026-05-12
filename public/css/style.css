@@ -633,7 +633,9 @@ body {
     .card-info { width: auto; }
 }
 
-.hidden-view { display: none !important;}
+.hidden-view { 
+    display: none !important;
+}
 
 /* Cook listing form */
 
