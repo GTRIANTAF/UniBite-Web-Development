@@ -1,0 +1,922 @@
+:root {
+    --primary-color: #FF5722;
+    --secondary-color: #4CAF50;
+    --accent-color: #FFB300;
+    --bg-color: #F8F9FA;
+    --text-dark: #212529;
+    --text-light: #6c757d;
+}
+
+*{box-sizing: border-box;}
+
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-dark);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column; /* Mobile-First: Όλα σε μια στήλη */
+}
+
+/* Mobile first layout */
+
+/* Navigation CSS */
+.navigation {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+    z-index: 1000;
+}
+
+#map {
+    height: 470px;
+}
+
+.logo { display: none; }
+
+.nav-links {
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+    align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-links a {
+    color: var(--text-light);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5px;
+    transition: color 0.2s;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    color: var(--primary-color);
+}
+
+/* Ετικέτες κάτω από τα εικονίδια */
+.nav-text {
+    display: block;
+    font-size: 10px;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+/* Main Content Area */
+.main-content {
+    padding: 20px;
+    padding-bottom: 90px;
+    width: 100%;
+}
+
+.top-header { margin-bottom: 20px; }
+.top-header h2 { margin: 0; color: var(--primary-color); }
+
+/* Toggle List/Map */
+.view-toggle {
+    display: flex;
+    background-color: white;
+    border-radius: 30px;
+    padding: 5px;
+    margin: 0 auto 20px auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    max-width: 300px;
+}
+
+.toggle-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--text-light);
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.toggle-btn.active {
+    background-color: #ffeae3;
+    color: var(--primary-color);
+}
+
+/* Glass (floating) info card */
+.feed-container {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.food-card {
+    background: transparent; /* Διάφανο φόντο, η κάρτα "χτίζεται" από τα στοιχεία της */
+    display: flex;
+    flex-direction: column;
+}
+
+/* sold out food cards */
+.food-card.noAvailability {
+    opacity: 0.6;
+    filter: grayscale(0.8); /* Αφαιρεί το χρώμα */
+    pointer-events: none; /* Απενεργοποιεί τα κλικ σε όλη την κάρτα*/
+}
+
+.food-card.noAvailability .btn-reserve {
+    background-color: #888 !important; /* Γκρι χρώμα στο κουμπί */
+    cursor: not-allowed;
+    pointer-events: auto; /* Επιτρέπει το hover για να φαίνεται το απαγορευτικό εικονίδιο */
+}
+
+.card-img-container {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.badge.green {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Το γυάλινο πλαίσιο που ανεβαίνει πάνω στην εικόνα */
+.card-info {
+    position: relative;
+    margin-top: -50px; /* Το τραβάει πάνω από την εικόνα */
+    margin-left: 15px;
+    margin-right: 15px;
+    margin-bottom: 15px;
+    background: rgba(255, 255, 255, 0.85); /* 85% αδιαφάνεια - λευκό */
+    backdrop-filter: blur(12px); /* Το εφέ θολώματος (glassmorphism) */
+    -webkit-backdrop-filter: blur(12px); /* Για Safari */
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 2;
+    border: 1px solid rgba(255,255,255,0.5);
+}
+
+.food-title { margin: 0; font-size: 18px; color: var(--text-dark); }
+.location-text { margin: 5px 0 0 0; color: var(--text-light); font-size: 14px; display: flex; align-items: center; }
+.small-icon { font-size: 16px; margin-right: 4px; }
+
+.info-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding-top: 10px;
+}
+
+.cook-name { font-size: 14px; font-weight: 500; }
+
+/* Reserve Button */
+.btn-reserve {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+}
+.btn-reserve:hover { background-color: #e64a19; }
+.btn-reserve:active { transform: scale(0.95); }
+
+/* Slider CSS */
+.range-container {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin: 20px 0;
+}
+
+.range-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.range-badge {
+    background: #2ecc71;
+    color: white;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.modern-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 5px;
+    outline: none;
+}
+
+.modern-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #2ecc71;
+    border: 3px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+}
+
+.modern-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    background: #27ae60;
+}
+
+/* Profile CSS */
+#profile-view {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    max-width: 100%; /* Προσαρμόζεται στο κινητό */
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease;
+
+    /* Φέρνουμε τη "Λευκή Κάρτα" και στο κινητό */
+    background: white;
+    padding: 30px 20px;
+    border-radius: 24px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+}
+
+.profile-header {
+    text-align: center;
+    margin-top: 5px;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    background-color: #fff0eb; /* Απαλό πορτοκαλί φόντο, ίδιο με το desktop */
+    color: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px auto;
+}
+
+.profile-avatar .material-icons {
+    font-size: 52px;
+}
+
+.profile-header h2 {
+    margin: 0 0 5px 0;
+    color: var(--text-dark);
+    font-size: 22px;
+}
+
+.profile-header p {
+    margin: 0;
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+/* Κάρτα Πόντων (Παραμένει εντυπωσιακή και στο κινητό) */
+.points-card {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #ff8a65 100%);
+    border-radius: 16px;
+    padding: 25px 20px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 8px 20px rgba(255, 87, 34, 0.3);
+}
+
+.points-info h3 {
+    margin: 0 0 5px 0;
+    font-size: 18px;
+}
+
+.points-info p {
+    margin: 0;
+    font-size: 13px;
+    opacity: 0.95;
+    max-width: 160px; /* Στο κινητό το κρατάμε μαζεμένο */
+    line-height: 1.4;
+}
+
+.points-badge {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.points-badge span:first-child {
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.points-badge .material-icons {
+    font-size: 16px;
+    margin-top: 2px;
+}
+
+/* Ενέργειες (Κουμπιά) */
+.profile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Το "Γίνε Μάγειρας" παίρνει το καθαρό στυλ του desktop αλλά προσαρμοσμένο για μικρές οθόνες */
+.switch-role-box {
+    background-color: #f8fcf8;
+    border: 1px solid #e8f5e9;
+    padding: 20px;
+    border-radius: 16px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.switch-role-box p {
+    margin: 0;
+    color: #4CAF50;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.switch-btn {
+    background-color: var(--secondary-color);
+    color: white;
+}
+.switch-btn:active { transform: scale(0.98); }
+
+/* Το κουμπί αποσύνδεσης γίνεται Ghost Button και στο κινητό */
+.logout-btn {
+    background-color: transparent;
+    color: #dc3545;
+    border: none; /* Τέλος το σκληρό περίγραμμα! */
+    width: auto;
+    align-self: center; /* Κεντραρισμένο κάτω κάτω */
+    padding: 10px 20px;
+}
+
+.logout-btn:hover, .logout-btn:active {
+    background-color: #fff0f0;
+    border-radius: 12px;
+}
+
+/* Orders CSS */
+/* ==========================================
+   ORDERS VIEW STYLES
+   ========================================== */
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-bottom: 20px;
+}
+
+.order-card {
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-left: 5px solid var(--text-light); /* Default χρώμα */
+}
+
+.order-card.completed { border-left-color: var(--secondary-color); }
+.order-card.pending { border-left-color: var(--accent-color); }
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+}
+
+.order-date { font-size: 12px; color: var(--text-light); }
+
+.order-badge {
+    font-size: 11px;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+.order-badge.completed { background: #E8F5E9; color: #2E7D32; }
+.order-badge.pending { background: #FFF8E1; color: #F57F17; }
+
+.order-body { display: flex; align-items: center; gap: 15px; margin-top: 5px; }
+
+.order-icon {
+    background: var(--bg-color);
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+}
+
+.order-info h4 { margin: 0 0 4px 0; font-size: 16px; color: var(--text-dark); }
+.order-info p { margin: 0; font-size: 13px; color: var(--text-light); }
+
+.order-actions { margin-top: 5px; text-align: right; }
+
+.btn-review {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 13px;
+    transition: 0.2s;
+}
+.btn-review:hover { background: #e64a19; }
+
+/* --- MODAL ΑΞΙΟΛΟΓΗΣΗΣ (Popup) --- */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal-content {
+    background: white;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 16px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.modal-content h3 { margin: 0 0 5px 0; color: var(--primary-color); }
+.modal-content p { color: var(--text-light); font-size: 14px; margin-bottom: 20px;}
+
+.star-rating {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 20px;
+    color: #FFD700; /* Χρυσό χρώμα για τα αστέρια */
+    cursor: pointer;
+}
+
+.star-rating .material-icons { font-size: 36px; transition: 0.2s; }
+
+#review-comments {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    font-family: inherit;
+    resize: none;
+    margin-bottom: 20px;
+}
+
+.modal-actions { display: flex; gap: 10px; }
+.modal-actions button {
+    flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer;
+}
+.btn-cancel { background: #f1f3f5; color: var(--text-dark); }
+.btn-submit { background: var(--secondary-color); color: white; }
+
+.auth-container {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+.title-font { font-family: 'Plus Jakarta Sans', sans-serif; color: #FF5722; font-size: 28px; margin-bottom: 20px;}
+.auth-input {
+    width: 100%; padding: 12px; margin: 10px 0;
+    border: 1px solid #ccc; border-radius: 8px; font-size: 16px;
+    box-sizing: border-box;
+}
+.btn-auth {
+    width: 100%; padding: 12px; background: #FF5722; color: white;
+    border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
+    font-size: 16px; margin-top: 10px; transition: 0.3s;
+}
+.btn-auth:hover { background: #e64a19; }
+.switch-text { margin-top: 20px; font-size: 14px; color: #666; }
+.switch-text a { color: #4CAF50; font-weight: bold; text-decoration: none; cursor: pointer;}
+
+.cook-page {
+    max-width: 980px;
+}
+
+.cook-header {
+    margin-bottom: 24px;
+}
+
+.cook-header h1 {
+    margin: 0 0 6px 0;
+    color: var(--primary-color);
+    font-size: 28px;
+}
+
+.cook-header p {
+    margin: 0;
+    color: var(--text-light);
+}
+
+.listing-form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+}
+
+.form-section h2 {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+    color: var(--text-dark);
+}
+
+.form-section label {
+    display: block;
+    margin: 14px 0 6px 0;
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 14px;
+}
+
+.form-section input,
+.form-section textarea {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    font: inherit;
+    background: #fff;
+}
+
+.form-section input:focus,
+.form-section textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.12);
+}
+
+.allergen-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.allergen-grid label {
+    margin: 0;
+    background: var(--bg-color);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-weight: 500;
+}
+
+.submit-listing-btn {
+    width: 100%;
+    border: none;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 10px;
+    padding: 15px;
+    font-weight: 800;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.submit-listing-btn:hover {
+    background: #e64a19;
+}
+
+.form-message {
+    padding: 14px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+.form-message.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.form-message.error {
+    background: #ffebee;
+    color: #c62828;
+}
+
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- DESKTOP RESIZING --- */
+
+@media (min-width: 768px) {
+    body { flex-direction: row; }
+
+    #map {
+        width: 100%;
+        height: 650px;
+        border: 2px solid #ccc;
+        border-radius: 8px;
+        z-index: 1;
+        margin-bottom: 20px;
+    }
+
+    /* Μετατροπή της Bottom Bar σε Αριστερό Sidebar */
+    .navigation {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 250px;
+        height: 100vh;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: 30px 20px;
+    }
+
+    .logo {
+        display: block;
+        font-size: 28px;
+        font-weight: bold;
+        color: var(--primary-color);
+        margin-bottom: 40px;
+        text-align: center;
+    }
+
+    .nav-spacer { display: none; } /* Κρύβουμε το κενό του κινητού */
+
+    .top-header h2 { display: none; }
+
+    .nav-links {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .nav-links a {
+        flex-direction: row;
+        font-size: 16px;
+        padding: 12px;
+        border-radius: 8px;
+    }
+    .nav-links a:hover { background-color: var(--bg-color); }
+
+    .nav-text {
+        margin-top: 0;
+        margin-left: 15px;
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    /* Ρύθμιση του κεντρικού περιεχομένου για να μην κρύβεται πίσω από το Sidebar */
+    .main-content {
+        margin-left: 250px;
+        width: calc(100% - 250px);
+        padding: 40px;
+    }
+
+    .view-toggle { margin: 0 0 30px 0; }
+
+    .feed-container {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .food-card {
+        width: calc(50% - 10px);
+        flex-direction: column;
+    }
+
+    .card-img-container { width: 100%; }
+
+    .card-info { width: auto; }
+
+    #profile-view {
+        background: white;
+        max-width: 1000px; /* Λίγο πιο φαρδύ για να ανασαίνει */
+        margin: 40px auto;
+        padding: 50px; /* Περισσότερος αέρας εσωτερικά */
+        border-radius: 24px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.04); /* Πιο απαλή σκιά */
+
+        display: grid;
+        grid-template-columns: 1fr 2fr; /* Δίνουμε περισσότερο χώρο (2fr) στη δεξιά στήλη */
+        gap: 50px; /* Μεγαλύτερο κενό ανάμεσα στις στήλες */
+    }
+
+    /* 1. Αριστερή Στήλη: Στοιχεία Χρήστη */
+    .profile-header {
+        grid-column: 1 / 2;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+
+        border-right: 2px solid #eaeaea; /* Πιο διακριτική, λεπτή γραμμή */
+        padding-right: 50px;
+    }
+
+    .profile-avatar {
+        width: 140px;
+        height: 140px;
+        margin: 0 0 25px 0;
+        background-color: #fff0eb; /* Πιο απαλό πορτοκαλί φόντο */
+    }
+
+    .profile-avatar .material-icons {
+        font-size: 70px;
+    }
+
+    .points-card {
+        grid-column: 2 / 3;
+        margin-bottom: 30px;
+        border-radius: 16px;
+        padding: 40px; /* <--- Προσθήκη: 40px padding αντί για 25px του κινητού */
+    }
+
+    .points-info h3 {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .points-info p {
+        max-width: 380px; /* Το αυξάνουμε από τα 180px του κινητού για να γεμίσει το χώρο */
+        font-size: 15px; /* Ελαφρώς μεγαλύτερο κείμενο */
+        line-height: 1.5; /* Δίνει αέρα ανάμεσα στις γραμμές (ύψος γραμμής) */
+        opacity: 0.95;
+    }
+
+    .points-badge {
+        width: 90px;
+        height: 90px;
+    }
+    .points-badge span:first-child {
+        font-size: 32px;
+    }
+
+    .profile-actions {
+        grid-column: 2 / 3;
+        display: flex;
+        flex-direction: column; /* Στοιβάζουμε τα στοιχεία κάθετα αντί για δίπλα-δίπλα */
+        gap: 20px;
+    }
+
+    /* Η προτροπή για Μάγειρα γίνεται μια κομψή οριζόντια γραμμή */
+    .switch-role-box {
+        background-color: #f8fcf8; /* Ελάχιστα ορατό πράσινο/γκρι φόντο */
+        border: 1px solid #e8f5e9;
+        padding: 20px 25px;
+        border-radius: 16px;
+        display: flex;
+        flex-direction: row; /* Κείμενο αριστερά, κουμπί δεξιά */
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+    }
+
+    .switch-role-box p {
+        margin: 0;
+        color: #4CAF50;
+        font-size: 15px;
+    }
+
+    .switch-btn {
+        width: auto; /* Το κουμπί παίρνει όσο χώρο χρειάζεται */
+        padding: 10px 25px;
+        margin: 0;
+        box-shadow: none; /* Αφαιρούμε τη σκιά για πιο flat / modern look */
+    }
+
+    /* Το κουμπί αποσύνδεσης γίνεται διακριτικό και πάει δεξιά */
+    .logout-btn {
+        align-self: center; /* Το σπρώχνουμε τέρμα δεξιά */
+        width: auto;
+        padding: 10px 20px;
+        border: none; /* Αφαιρούμε το βαρύ κόκκινο περίγραμμα */
+        background: transparent;
+        color: #dc3545;
+    }
+
+    .logout-btn:hover {
+        background: #fff0f0;
+        color: #c82333;
+    }
+
+    .listing-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+    }
+
+    .form-section:nth-of-type(3),
+    .form-message,
+    .submit-listing-btn {
+        grid-column: 1 / -1;
+    }
+
+    .allergen-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+.hidden-view { display: none !important;}
