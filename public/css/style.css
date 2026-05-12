@@ -583,6 +583,123 @@ body {
 .switch-text { margin-top: 20px; font-size: 14px; color: #666; }
 .switch-text a { color: #4CAF50; font-weight: bold; text-decoration: none; cursor: pointer;}
 
+.cook-page {
+    max-width: 980px;
+}
+
+.cook-header {
+    margin-bottom: 24px;
+}
+
+.cook-header h1 {
+    margin: 0 0 6px 0;
+    color: var(--primary-color);
+    font-size: 28px;
+}
+
+.cook-header p {
+    margin: 0;
+    color: var(--text-light);
+}
+
+.listing-form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+}
+
+.form-section h2 {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+    color: var(--text-dark);
+}
+
+.form-section label {
+    display: block;
+    margin: 14px 0 6px 0;
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 14px;
+}
+
+.form-section input,
+.form-section textarea {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    font: inherit;
+    background: #fff;
+}
+
+.form-section input:focus,
+.form-section textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.12);
+}
+
+.allergen-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.allergen-grid label {
+    margin: 0;
+    background: var(--bg-color);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-weight: 500;
+}
+
+.submit-listing-btn {
+    width: 100%;
+    border: none;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 10px;
+    padding: 15px;
+    font-weight: 800;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.submit-listing-btn:hover {
+    background: #e64a19;
+}
+
+.form-message {
+    padding: 14px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+.form-message.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.form-message.error {
+    background: #ffebee;
+    color: #c62828;
+}
+
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -783,6 +900,23 @@ body {
         background: #fff0f0;
         color: #c82333;
     }
+
+    .listing-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+    }
+
+    .form-section:nth-of-type(3),
+    .form-message,
+    .submit-listing-btn {
+        grid-column: 1 / -1;
+    }
+
+    .allergen-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
 }
 
 .hidden-view { display: none !important;}
