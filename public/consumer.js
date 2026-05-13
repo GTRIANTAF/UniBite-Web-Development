@@ -126,7 +126,7 @@ function filterByDistance(maxKm) {
 function loadFeed() {
     feedContainer.innerHTML = '';
 
-    fetch('/api/listings')
+    fetch(`/api/listings?userId=${CURRENT_USER_ID}`)
         .then(res => res.json())
         .then(data => {
             console.log(data)
@@ -146,14 +146,29 @@ function loadFeed() {
 
                 const lat = listing.latitude || 38.2466;
                 const lng = listing.longitude || 21.7346;
-
                 const dist = calculateDistance(userLocation.lat, userLocation.lng, lat, lng);
+
+                const hasReserved = listing.already_requested > 0;
+
+                let btnText = 'Reserve';
+                let btnDisabled = '';
+                let btnStyle = '';
+
+                if (hasReserved) {
+                    btnText = 'Already Reserved';
+                    btnDisabled = 'disabled';
+                    btnStyle = 'background-color: gray; cursor: not-allowed;';
+                } else if (isExhausted) {
+                    btnText = 'Sold Out';
+                    btnDisabled = 'disabled';
+                    btnStyle = 'background-color: gray; cursor: not-allowed;';
+                }
 
                 // List View
                 const card = document.createElement('article');
                 card.className = `food-card ${isExhausted ? 'noAvailability' : ''}`;
 
-                card.dataset.distance = dist;
+                card.dataset.distance = dist; // Τώρα βρίσκει κανονικά το dist!
 
                 card.innerHTML = `
                     <div class="card-img-container">
@@ -170,9 +185,11 @@ function loadFeed() {
                         <p>${listing.description}</p>
                         <div class="info-bottom">
                             <span>Pickup: ${listing.pickup_time ? formatPickupTime(listing.pickup_time) : 'Άμεσα'}</span>
-                            <button class="btn-reserve" data-listing-id="${id}" ${isExhausted ? 'disabled   ' : ''}>
-                                ${isExhausted ? 'Sold Out' : 'Reserve'}
+                            
+                            <button class="btn-reserve" data-listing-id="${id}" ${btnDisabled} style="${btnStyle}">
+                                ${btnText}
                             </button>
+                            
                         </div>
                     </div>
                 `;
@@ -186,9 +203,11 @@ function loadFeed() {
                         <div style="text-align:center">
                             <h4>${listing.title}</h4>
                             <p>Portions: ${portions}</p>
-                            <button class="reserve-btn" data-listing-id="${id}" ${isExhausted ? 'disabled' : ''}>
-                                ${isExhausted ? 'Sold Out' : 'Reserve'}
+                            
+                            <button class="btn-reserve" data-listing-id="${id}" ${btnDisabled} style="${btnStyle}">
+                                ${btnText}
                             </button>
+                            
                         </div>
                     `);
                     markersLayer.addLayer(marker);
