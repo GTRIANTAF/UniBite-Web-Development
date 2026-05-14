@@ -5,21 +5,21 @@ const db = require('../database_connection');
 const editableStatuses = ['Active', 'Inactive'];
 
 function isPositiveInteger(value) {
-  const number = Number(value);
-  return Number.isInteger(number) && number > 0;
+    const number = Number(value);
+    return Number.isInteger(number) && number > 0;
 }
 
 function isNonNegativeInteger(value) {
-  const number = Number(value);
-  return Number.isInteger(number) && number >= 0;
+    const number = Number(value);
+    return Number.isInteger(number) && number >= 0;
 }
 
 function normalizeOptionalText(value) {
-  return value && value.trim() !== '' ? value.trim() : null;
+    return value && value.trim() !== '' ? value.trim() : null;
 }
 
 function refreshListingStatuses(callback) {
-  const query = `
+    const query = `
     UPDATE Listing
     SET status = CASE
       WHEN creation_timestamp <= NOW() - INTERVAL 48 HOUR THEN 'Deleted'
@@ -29,20 +29,20 @@ function refreshListingStatuses(callback) {
     WHERE status != 'Deleted'
   `;
 
-  db.query(query, callback);
+    db.query(query, callback);
 }
 
 // GET all visible listings
 router.get('/', (req, res) => {
-  refreshListingStatuses((statusErr) => {
-    if (statusErr) {
-      return res.status(500).json({
-        error: 'Database error while refreshing listing statuses',
-        details: statusErr.message
-      });
-    }
+    refreshListingStatuses((statusErr) => {
+        if (statusErr) {
+            return res.status(500).json({
+                error: 'Database error while refreshing listing statuses',
+                details: statusErr.message
+            });
+        }
 
-    const query = `
+        const query = `
       SELECT *
       FROM Listing
       WHERE status IN ('Active', 'Inactive')
@@ -50,38 +50,38 @@ router.get('/', (req, res) => {
       ORDER BY creation_timestamp DESC
     `;
 
-    db.query(query, (err, results) => {
-      if (err) {
-        return res.status(500).json({
-          error: 'Database error',
-          details: err.message
-        });
-      }
+        db.query(query, (err, results) => {
+            if (err) {
+                return res.status(500).json({
+                    error: 'Database error',
+                    details: err.message
+                });
+            }
 
-      res.json(results);
+            res.json(results);
+        });
     });
-  });
 });
 
 // GET listings by cook
 router.get('/cook/:cookId', (req, res) => {
-  const cookId = Number(req.params.cookId);
+    const cookId = Number(req.params.cookId);
 
-  if (!Number.isInteger(cookId) || cookId <= 0) {
-    return res.status(400).json({
-      error: 'Invalid cook id'
-    });
-  }
-
-  refreshListingStatuses((statusErr) => {
-    if (statusErr) {
-      return res.status(500).json({
-        error: 'Database error while refreshing listing statuses',
-        details: statusErr.message
-      });
+    if (!Number.isInteger(cookId) || cookId <= 0) {
+        return res.status(400).json({
+            error: 'Invalid cook id'
+        });
     }
 
-    const query = `
+    refreshListingStatuses((statusErr) => {
+        if (statusErr) {
+            return res.status(500).json({
+                error: 'Database error while refreshing listing statuses',
+                details: statusErr.message
+            });
+        }
+
+        const query = `
       SELECT *
       FROM Listing
       WHERE cook_id = ?
@@ -89,38 +89,38 @@ router.get('/cook/:cookId', (req, res) => {
       ORDER BY creation_timestamp DESC
     `;
 
-    db.query(query, [cookId], (err, results) => {
-      if (err) {
-        return res.status(500).json({
-          error: 'Database error',
-          details: err.message
-        });
-      }
+        db.query(query, [cookId], (err, results) => {
+            if (err) {
+                return res.status(500).json({
+                    error: 'Database error',
+                    details: err.message
+                });
+            }
 
-      res.json(results);
+            res.json(results);
+        });
     });
-  });
 });
 
 // GET pickup info for a listing
 router.get('/:id/pickup-info', (req, res) => {
-  const listingId = Number(req.params.id);
+    const listingId = Number(req.params.id);
 
-  if (!Number.isInteger(listingId) || listingId <= 0) {
-    return res.status(400).json({
-      error: 'Invalid listing id'
-    });
-  }
-
-  refreshListingStatuses((statusErr) => {
-    if (statusErr) {
-      return res.status(500).json({
-        error: 'Database error while refreshing listing statuses',
-        details: statusErr.message
-      });
+    if (!Number.isInteger(listingId) || listingId <= 0) {
+        return res.status(400).json({
+            error: 'Invalid listing id'
+        });
     }
 
-    const query = `
+    refreshListingStatuses((statusErr) => {
+        if (statusErr) {
+            return res.status(500).json({
+                error: 'Database error while refreshing listing statuses',
+                details: statusErr.message
+            });
+        }
+
+        const query = `
       SELECT
         listing_id,
         title,
@@ -133,136 +133,172 @@ router.get('/:id/pickup-info', (req, res) => {
         AND status != 'Deleted'
     `;
 
-    db.query(query, [listingId], (err, results) => {
-      if (err) {
-        return res.status(500).json({
-          error: 'Database error',
-          details: err.message
-        });
-      }
+        db.query(query, [listingId], (err, results) => {
+            if (err) {
+                return res.status(500).json({
+                    error: 'Database error',
+                    details: err.message
+                });
+            }
 
-      if (results.length === 0) {
-        return res.status(404).json({
-          error: 'Listing not found'
-        });
-      }
+            if (results.length === 0) {
+                return res.status(404).json({
+                    error: 'Listing not found'
+                });
+            }
 
-      res.json(results[0]);
+            res.json(results[0]);
+        });
     });
-  });
 });
 
 // GET single listing
 router.get('/:id', (req, res) => {
-  const listingId = Number(req.params.id);
+    const listingId = Number(req.params.id);
 
-  if (!Number.isInteger(listingId) || listingId <= 0) {
-    return res.status(400).json({
-      error: 'Invalid listing id'
-    });
-  }
-
-  refreshListingStatuses((statusErr) => {
-    if (statusErr) {
-      return res.status(500).json({
-        error: 'Database error while refreshing listing statuses',
-        details: statusErr.message
-      });
+    if (!Number.isInteger(listingId) || listingId <= 0) {
+        return res.status(400).json({
+            error: 'Invalid listing id'
+        });
     }
 
-    const query = `
+    refreshListingStatuses((statusErr) => {
+        if (statusErr) {
+            return res.status(500).json({
+                error: 'Database error while refreshing listing statuses',
+                details: statusErr.message
+            });
+        }
+
+        const query = `
       SELECT *
       FROM Listing
       WHERE listing_id = ?
         AND status != 'Deleted'
     `;
 
-    db.query(query, [listingId], (err, results) => {
-      if (err) {
-        return res.status(500).json({
-          error: 'Database error',
-          details: err.message
-        });
-      }
+        db.query(query, [listingId], (err, results) => {
+            if (err) {
+                return res.status(500).json({
+                    error: 'Database error',
+                    details: err.message
+                });
+            }
 
-      if (results.length === 0) {
-        return res.status(404).json({
-          error: 'Listing not found'
-        });
-      }
+            if (results.length === 0) {
+                return res.status(404).json({
+                    error: 'Listing not found'
+                });
+            }
 
-      res.json(results[0]);
+            res.json(results[0]);
+        });
     });
-  });
 });
 
 // CREATE listing
-router.post('/', (req, res) => {
-  const {
-    cook_id,
-    title,
-    description,
-    photo_url,
-    allergens,
-    pickup_location,
-    pickup_building,
-    pickup_details,
-    pickup_time,
-    total_portions
-  } = req.body;
+router.post('/', async (req, res) => {
+    const {
+        cook_id, title, description, photo_url, allergens,
+        pickup_location, pickup_building, pickup_details, pickup_time, total_portions
+    } = req.body;
 
-  if (
-    !cook_id ||
-    !title ||
-    !description ||
-    !pickup_location ||
-    !pickup_building ||
-    !pickup_time ||
-    !total_portions
-  ) {
-    return res.status(400).json({
-      error: 'Missing required fields'
-    });
-  }
-
-  const cookId = Number(cook_id);
-  const portions = Number(total_portions);
-
-  if (!Number.isInteger(cookId) || cookId <= 0) {
-    return res.status(400).json({
-      error: 'Invalid cook id'
-    });
-  }
-
-  if (!isPositiveInteger(portions)) {
-    return res.status(400).json({
-      error: 'Total portions must be a positive integer'
-    });
-  }
-
-  const checkCookQuery = `
-    SELECT user_id
-    FROM User
-    WHERE user_id = ?
-  `;
-
-  db.query(checkCookQuery, [cookId], (cookErr, cookResults) => {
-    if (cookErr) {
-      return res.status(500).json({
-        error: 'Database error',
-        details: cookErr.message
-      });
+    if (!cook_id || !title || !description || !pickup_location || !pickup_building || !pickup_time || !total_portions) {
+        return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    if (cookResults.length === 0) {
-      return res.status(404).json({
-        error: 'Cook not found'
-      });
+    const cookId = Number(cook_id);
+    const portions = Number(total_portions);
+
+    if (!Number.isInteger(cookId) || cookId <= 0) {
+        return res.status(400).json({ error: 'Invalid cook id' });
     }
 
-    const query = `
+    if (!isPositiveInteger(portions)) {
+        return res.status(400).json({ error: 'Total portions must be a positive integer' });
+    }
+
+    // Προεπιλογή: Κέντρο Πάτρας
+    let lat = 38.2462;
+    let lon = 21.7351;
+
+    try {
+        const addressQuery = encodeURIComponent(pickup_location.trim() + ", Πάτρα, Ελλάδα");
+        const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${addressQuery}&limit=1`;
+
+        const geoResponse = await fetch(geocodeUrl, {
+            headers: { 'User-Agent': 'UniBite_Student_Project_Upatras' }
+        });
+        const geoData = await geoResponse.json();
+
+        if (geoData && geoData.length > 0) {
+            lat = parseFloat(geoData[0].lat);
+            lon = parseFloat(geoData[0].lon);
+            console.log(`Geocoding Επιτυχές για '${pickup_location}': ${lat}, ${lon}`);
+        } else {
+            console.log(`Αποτυχία Geocoding για '${pickup_location}'. Χρήση προεπιλογής.`);
+        }
+    } catch (error) {
+        console.error("Σφάλμα API Nominatim:", error.message);
+    }
+
+    const checkCookQuery = `SELECT user_id FROM User WHERE user_id = ?`;
+
+    db.query(checkCookQuery, [cookId], (cookErr, cookResults) => {
+        if (cookErr) return res.status(500).json({ error: 'Database error', details: cookErr.message });
+        if (cookResults.length === 0) return res.status(404).json({ error: 'Cook not found' });
+
+        const query = `
       INSERT INTO Listing
       (
+        cook_id, title, description, photo_url, allergens,
+        pickup_location, pickup_building, pickup_details, pickup_time,
+        latitude, longitude, total_portions, available_portions, status
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Active')
+    `;
+
+        db.query(
+            query,
+            [
+                cookId,
+                title.trim(),
+                description.trim(),
+                normalizeOptionalText(photo_url),
+                normalizeOptionalText(allergens),
+                pickup_location.trim(),
+                pickup_building.trim(),
+                normalizeOptionalText(pickup_details),
+                pickup_time,
+                lat,
+                lon,
+                portions,
+                portions
+            ],
+            (err, result) => {
+                if (err) return res.status(500).json({ error: 'Database error', details: err.message });
+
+                res.status(201).json({
+                    message: 'Listing created successfully',
+                    listingId: result.insertId,
+                    coordinates: { lat, lon }
+                });
+            }
+        );
+    });
+});
+
+// UPDATE listing
+router.put('/:id', async (req, res) => {
+    const listingId = Number(req.params.id);
+
+    if (!Number.isInteger(listingId) || listingId <= 0) {
+        return res.status(400).json({
+            error: 'Invalid listing id'
+        });
+    }
+
+    const {
         cook_id,
         title,
         description,
@@ -275,119 +311,80 @@ router.post('/', (req, res) => {
         total_portions,
         available_portions,
         status
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Active')
-    `;
+    } = req.body;
 
-    db.query(
-      query,
-      [
-        cookId,
-        title.trim(),
-        description.trim(),
-        normalizeOptionalText(photo_url),
-        normalizeOptionalText(allergens),
-        pickup_location.trim(),
-        pickup_building.trim(),
-        normalizeOptionalText(pickup_details),
-        pickup_time,
-        portions,
-        portions
-      ],
-      (err, result) => {
-        if (err) {
-          return res.status(500).json({
-            error: 'Database error',
-            details: err.message
-          });
-        }
-
-        res.status(201).json({
-          message: 'Listing created successfully',
-          listingId: result.insertId
+    if (
+        !cook_id ||
+        !title ||
+        !description ||
+        !pickup_location ||
+        !pickup_building ||
+        !pickup_time ||
+        !total_portions
+    ) {
+        return res.status(400).json({
+            error: 'Missing required fields'
         });
-      }
-    );
-  });
-});
+    }
 
-// UPDATE listing
-router.put('/:id', (req, res) => {
-  const listingId = Number(req.params.id);
+    const cookId = Number(cook_id);
+    const portions = Number(total_portions);
+    const available = available_portions === undefined
+        ? portions
+        : Number(available_portions);
+    const listingStatus = status || 'Active';
 
-  if (!Number.isInteger(listingId) || listingId <= 0) {
-    return res.status(400).json({
-      error: 'Invalid listing id'
-    });
-  }
+    if (!Number.isInteger(cookId) || cookId <= 0) {
+        return res.status(400).json({
+            error: 'Invalid cook id'
+        });
+    }
 
-  const {
-    cook_id,
-    title,
-    description,
-    photo_url,
-    allergens,
-    pickup_location,
-    pickup_building,
-    pickup_details,
-    pickup_time,
-    total_portions,
-    available_portions,
-    status
-  } = req.body;
+    if (!isPositiveInteger(portions)) {
+        return res.status(400).json({
+            error: 'Total portions must be a positive integer'
+        });
+    }
 
-  if (
-    !cook_id ||
-    !title ||
-    !description ||
-    !pickup_location ||
-    !pickup_building ||
-    !pickup_time ||
-    !total_portions
-  ) {
-    return res.status(400).json({
-      error: 'Missing required fields'
-    });
-  }
+    if (!isNonNegativeInteger(available)) {
+        return res.status(400).json({
+            error: 'Available portions must be zero or a positive integer'
+        });
+    }
 
-  const cookId = Number(cook_id);
-  const portions = Number(total_portions);
-  const available = available_portions === undefined
-    ? portions
-    : Number(available_portions);
-  const listingStatus = status || 'Active';
+    if (available > portions) {
+        return res.status(400).json({
+            error: 'Available portions cannot be more than total portions'
+        });
+    }
 
-  if (!Number.isInteger(cookId) || cookId <= 0) {
-    return res.status(400).json({
-      error: 'Invalid cook id'
-    });
-  }
+    if (!editableStatuses.includes(listingStatus)) {
+        return res.status(400).json({
+            error: 'Invalid listing status'
+        });
+    }
 
-  if (!isPositiveInteger(portions)) {
-    return res.status(400).json({
-      error: 'Total portions must be a positive integer'
-    });
-  }
+    let lat = 38.2462;
+    let lon = 21.7351;
 
-  if (!isNonNegativeInteger(available)) {
-    return res.status(400).json({
-      error: 'Available portions must be zero or a positive integer'
-    });
-  }
+    try {
+        const addressQuery = encodeURIComponent(pickup_location.trim() + ", Πάτρα, Ελλάδα");
+        const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${addressQuery}&limit=1`;
 
-  if (available > portions) {
-    return res.status(400).json({
-      error: 'Available portions cannot be more than total portions'
-    });
-  }
+        const geoResponse = await fetch(geocodeUrl, {
+            headers: { 'User-Agent': 'UniBite_Student_Project_Upatras' }
+        });
+        const geoData = await geoResponse.json();
 
-  if (!editableStatuses.includes(listingStatus)) {
-    return res.status(400).json({
-      error: 'Invalid listing status'
-    });
-  }
+        if (geoData && geoData.length > 0) {
+            lat = parseFloat(geoData[0].lat);
+            lon = parseFloat(geoData[0].lon);
+        }
+    } catch (error) {
+        console.error("Σφάλμα API Nominatim (Update):", error.message);
+    }
 
-  const query = `
+    const query = `
     UPDATE Listing
     SET
       title = ?,
@@ -398,6 +395,8 @@ router.put('/:id', (req, res) => {
       pickup_building = ?,
       pickup_details = ?,
       pickup_time = ?,
+      latitude = ?,
+      longitude = ?,
       total_portions = ?,
       available_portions = ?,
       status = ?
@@ -406,62 +405,64 @@ router.put('/:id', (req, res) => {
       AND status != 'Deleted'
   `;
 
-  db.query(
-    query,
-    [
-      title.trim(),
-      description.trim(),
-      normalizeOptionalText(photo_url),
-      normalizeOptionalText(allergens),
-      pickup_location.trim(),
-      pickup_building.trim(),
-      normalizeOptionalText(pickup_details),
-      pickup_time,
-      portions,
-      available,
-      listingStatus,
-      listingId,
-      cookId
-    ],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          error: 'Database error',
-          details: err.message
-        });
-      }
+    db.query(
+        query,
+        [
+            title.trim(),
+            description.trim(),
+            normalizeOptionalText(photo_url),
+            normalizeOptionalText(allergens),
+            pickup_location.trim(),
+            pickup_building.trim(),
+            normalizeOptionalText(pickup_details),
+            pickup_time,
+            lat,
+            lon,
+            portions,
+            available,
+            listingStatus,
+            listingId,
+            cookId
+        ],
+        (err, result) => {
+            if (err) {
+                return res.status(500).json({
+                    error: 'Database error',
+                    details: err.message
+                });
+            }
 
-      if (result.affectedRows === 0) {
-        return res.status(404).json({
-          error: 'Listing not found or you do not own this listing'
-        });
-      }
+            if (result.affectedRows === 0) {
+                return res.status(404).json({
+                    error: 'Listing not found or you do not own this listing'
+                });
+            }
 
-      res.json({
-        message: 'Listing updated successfully'
-      });
-    }
-  );
+            res.json({
+                message: 'Listing updated successfully'
+            });
+        }
+    );
 });
 
 // SOFT DELETE listing
 router.delete('/:id', (req, res) => {
-  const listingId = Number(req.params.id);
-  const cookId = Number(req.body.cook_id);
+    const listingId = Number(req.params.id);
+    const cookId = Number(req.body.cook_id);
 
-  if (!Number.isInteger(listingId) || listingId <= 0) {
-    return res.status(400).json({
-      error: 'Invalid listing id'
-    });
-  }
+    if (!Number.isInteger(listingId) || listingId <= 0) {
+        return res.status(400).json({
+            error: 'Invalid listing id'
+        });
+    }
 
-  if (!Number.isInteger(cookId) || cookId <= 0) {
-    return res.status(400).json({
-      error: 'Invalid cook id'
-    });
-  }
+    if (!Number.isInteger(cookId) || cookId <= 0) {
+        return res.status(400).json({
+            error: 'Invalid cook id'
+        });
+    }
 
-  const query = `
+    const query = `
     UPDATE Listing
     SET status = 'Deleted'
     WHERE listing_id = ?
@@ -469,24 +470,24 @@ router.delete('/:id', (req, res) => {
       AND status != 'Deleted'
   `;
 
-  db.query(query, [listingId, cookId], (err, result) => {
-    if (err) {
-      return res.status(500).json({
-        error: 'Database error',
-        details: err.message
-      });
-    }
+    db.query(query, [listingId, cookId], (err, result) => {
+        if (err) {
+            return res.status(500).json({
+                error: 'Database error',
+                details: err.message
+            });
+        }
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        error: 'Listing not found or you do not own this listing'
-      });
-    }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                error: 'Listing not found or you do not own this listing'
+            });
+        }
 
-    res.json({
-      message: 'Listing deleted successfully'
+        res.json({
+            message: 'Listing deleted successfully'
+        });
     });
-  });
 });
 
 module.exports = router;
