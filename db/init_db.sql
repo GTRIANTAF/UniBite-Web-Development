@@ -25,6 +25,8 @@ CREATE TABLE Listing(
     pickup_building VARCHAR(100) NOT NULL,
     pickup_details TEXT,
     pickup_time DATETIME NOT NULL,
+    latitude DECIMAL(10, 8),
+    longitude DECIMAL(11, 8),
     total_portions INT NOT NULL,
     available_portions INT NOT NULL,
     status ENUM ('Active', 'Inactive', 'Deleted') NOT NULL DEFAULT 'Active',
@@ -82,6 +84,8 @@ INSERT INTO Listing (
     pickup_building,
     pickup_details,
     pickup_time,
+    latitude,
+    longitude,
     total_portions,
     available_portions,
     status
@@ -97,6 +101,8 @@ VALUES
     'Βιβλιοθήκη',
     'Είσοδος βιβλιοθήκης, δίπλα στα σκαλιά.',
     DATE_ADD(NOW(), INTERVAL 2 HOUR),
+    38.28923000,
+    21.78504000,
     3,
     3,
     'Active'
@@ -111,6 +117,8 @@ VALUES
     'Τμήμα Μηχανικών Η/Υ',
     'Κεντρική είσοδος.',
     DATE_ADD(NOW(), INTERVAL 3 HOUR),
+    38.28670000,
+    21.78700000,
     2,
     1,
     'Active'

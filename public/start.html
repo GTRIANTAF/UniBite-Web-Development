@@ -65,7 +65,6 @@
             font-weight: 500;
         }
 
-        /* ΚΑΡΤΕΣ (GLASSMORPHISM) */
         .cards-wrapper {
             width: 100%;
             display: flex;
@@ -102,7 +101,6 @@
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
         }
 
-        /* Ειδικά χρώματα ανά κάρτα */
         .card-consumer { border-left: 5px solid var(--primary-orange); }
         .card-cook { border-left: 5px solid var(--primary-green); }
 
@@ -153,7 +151,6 @@
             color: var(--text-dark);
         }
 
-        /* Admin Link */
         .admin-link {
             margin-top: 50px;
             background: none;
@@ -171,7 +168,6 @@
         .admin-link:hover {
             color: var(--text-dark);
         }
-
     </style>
 </head>
 <body>
@@ -222,16 +218,21 @@
 
 <script>
     function selectRole(role) {
-        // 1. Αποθηκεύουμε τον ρόλο στον browser
         localStorage.setItem('unibite_role', role);
 
-        // 2. Ανακατεύθυνση στο σωστό αρχείο
         if (role === 'consumer') {
-            window.location.href = 'consumer.html'; // Η σελίδα σου
+            window.location.href = 'consumer.html';
         } else if (role === 'cook') {
-            window.location.href = 'cook.html';  // Η σελίδα της Μαρίας
+            window.location.href = 'cook.html';
         } else if (role === 'admin') {
-            window.location.href = 'admin.html'; // Σελίδα στατιστικών
+            const isAdmin = localStorage.getItem('unibite_is_admin') === '1';
+
+            if (!isAdmin) {
+                alert('Δεν έχεις δικαιώματα διαχειριστή.');
+                return;
+            }
+
+            window.location.href = 'admin.html';
         }
     }
 </script>

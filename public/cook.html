@@ -108,6 +108,24 @@
 
     </form>
 
+    <section class="provider-dashboard">
+        <div class="dashboard-header">
+            <div>
+                <h2>Αιτήματα Παραλαβής</h2>
+                <p>Διαχειρίσου κρατήσεις, εγκρίσεις και παραλαβές για τις αγγελίες σου.</p>
+            </div>
+
+            <button type="button" id="refresh-requests-btn" class="dashboard-refresh-btn">
+                <span class="material-icons">refresh</span>
+                Ανανέωση
+            </button>
+        </div>
+
+        <div id="cook-requests-container" class="cook-requests-container">
+            <p class="dashboard-empty">Φόρτωση αιτημάτων...</p>
+        </div>
+    </section>
+
 </main>
 
 <script src="cook.js"></script>
