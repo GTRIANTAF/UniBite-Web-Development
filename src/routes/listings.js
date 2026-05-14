@@ -34,30 +34,26 @@ function refreshListingStatuses(callback) {
 
 // GET all visible listings
 router.get('/', (req, res) => {
+    const userId = req.query.userId ? Number(req.query.userId) : 0;
+
     refreshListingStatuses((statusErr) => {
         if (statusErr) {
-            return res.status(500).json({
-                error: 'Database error while refreshing listing statuses',
-                details: statusErr.message
-            });
+            return res.status(500).json({ error: 'Database error', details: statusErr.message });
         }
 
         const query = `
-      SELECT *
-      FROM Listing
-      WHERE status IN ('Active', 'Inactive')
-        AND creation_timestamp > NOW() - INTERVAL 48 HOUR
-      ORDER BY creation_timestamp DESC
-    `;
+            SELECT L.*,
+                   (SELECT COUNT(*) FROM Request R WHERE R.listing_id = L.listing_id AND R.consumer_id = ?) AS already_requested
+            FROM Listing L
+            WHERE L.status IN ('Active', 'Inactive')
+              AND L.creation_timestamp > NOW() - INTERVAL 48 HOUR
+            ORDER BY L.creation_timestamp DESC
+        `;
 
-        db.query(query, (err, results) => {
+        db.query(query, [userId], (err, results) => {
             if (err) {
-                return res.status(500).json({
-                    error: 'Database error',
-                    details: err.message
-                });
+                return res.status(500).json({ error: 'Database error', details: err.message });
             }
-
             res.json(results);
         });
     });
