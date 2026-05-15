@@ -42,25 +42,25 @@ router.post('/', (req, res) => {
         }
 
         const checkQuery = `
-      SELECT
-        l.listing_id,
-        l.cook_id,
-        l.available_portions,
-        l.status AS listing_status,
-        TIMESTAMPDIFF(HOUR, l.creation_timestamp, NOW()) AS listing_age_hours,
-        u.points AS consumer_points,
-        (
-          SELECT COUNT(*)
-          FROM Request active_r
-          WHERE active_r.consumer_id = ?
-            AND active_r.status IN ('Pending', 'Approved')
-            AND active_r.delivery_status = 'Pending'
-        ) AS active_requests
-      FROM Listing l
-      INNER JOIN User u ON u.user_id = ?
-      WHERE l.listing_id = ?
-      FOR UPDATE
-    `;
+            SELECT
+                l.listing_id,
+                l.cook_id,
+                l.available_portions,
+                l.status AS listing_status,
+                TIMESTAMPDIFF(HOUR, l.creation_timestamp, NOW()) AS listing_age_hours,
+                u.points AS consumer_points,
+                (
+                    SELECT COUNT(*)
+                    FROM Request active_r
+                    WHERE active_r.consumer_id = ?
+                      AND active_r.status IN ('Pending', 'Approved')
+                      AND active_r.delivery_status = 'Pending'
+                ) AS active_requests
+            FROM Listing l
+                     INNER JOIN User u ON u.user_id = ?
+            WHERE l.listing_id = ?
+                FOR UPDATE
+        `;
 
         db.query(checkQuery, [consumerId, consumerId, listingId], (checkErr, rows) => {
             if (checkErr) {
@@ -96,10 +96,10 @@ router.post('/', (req, res) => {
 
             if (data.listing_age_hours >= 48 || data.listing_status === 'Deleted') {
                 const expireQuery = `
-          UPDATE Listing
-          SET status = 'Deleted'
-          WHERE listing_id = ?
-        `;
+                    UPDATE Listing
+                    SET status = 'Deleted'
+                    WHERE listing_id = ?
+                `;
 
                 return db.query(expireQuery, [listingId], (expireErr) => {
                     if (expireErr) {
@@ -130,13 +130,13 @@ router.post('/', (req, res) => {
             }
 
             const duplicateQuery = `
-        SELECT request_id
-        FROM Request
-        WHERE listing_id = ?
-          AND consumer_id = ?
-          AND status IN ('Pending', 'Approved')
-          AND delivery_status = 'Pending'
-      `;
+                SELECT request_id
+                FROM Request
+                WHERE listing_id = ?
+                  AND consumer_id = ?
+                  AND status IN ('Pending', 'Approved')
+                  AND delivery_status = 'Pending'
+            `;
 
             db.query(duplicateQuery, [listingId, consumerId], (duplicateErr, duplicateRows) => {
                 if (duplicateErr) {
@@ -152,9 +152,9 @@ router.post('/', (req, res) => {
                 }
 
                 const insertQuery = `
-          INSERT INTO Request (listing_id, consumer_id)
-          VALUES (?, ?)
-        `;
+                    INSERT INTO Request (listing_id, consumer_id)
+                    VALUES (?, ?)
+                `;
 
                 db.query(insertQuery, [listingId, consumerId], (insertErr, result) => {
                     if (insertErr) {
@@ -191,31 +191,31 @@ router.get('/cook/:cookId', (req, res) => {
     }
 
     const query = `
-    SELECT
-      r.request_id,
-      r.listing_id,
-      r.consumer_id,
-      r.status,
-      r.delivery_status,
-      r.creation_timestamp,
-      r.decision_timestamp,
-      r.pickup_timestamp,
-      l.title,
-      l.pickup_location,
-      l.pickup_building,
-      l.pickup_details,
-      l.pickup_time,
-      l.available_portions,
-      l.total_portions,
-      u.username AS consumer_username,
-      u.email AS consumer_email
-    FROM Request r
-    INNER JOIN Listing l ON r.listing_id = l.listing_id
-    INNER JOIN User u ON r.consumer_id = u.user_id
-    WHERE l.cook_id = ?
-      AND l.status != 'Deleted'
-    ORDER BY r.creation_timestamp DESC
-  `;
+        SELECT
+            r.request_id,
+            r.listing_id,
+            r.consumer_id,
+            r.status,
+            r.delivery_status,
+            r.creation_timestamp,
+            r.decision_timestamp,
+            r.pickup_timestamp,
+            l.title,
+            l.pickup_location,
+            l.pickup_building,
+            l.pickup_details,
+            l.pickup_time,
+            l.available_portions,
+            l.total_portions,
+            u.username AS consumer_username,
+            u.email AS consumer_email
+        FROM Request r
+                 INNER JOIN Listing l ON r.listing_id = l.listing_id
+                 INNER JOIN User u ON r.consumer_id = u.user_id
+        WHERE l.cook_id = ?
+          AND l.status != 'Deleted'
+        ORDER BY r.creation_timestamp DESC
+    `;
 
     db.query(query, [cookId], (err, results) => {
         if (err) {
@@ -255,21 +255,21 @@ router.patch('/:requestId/approve', (req, res) => {
         }
 
         const selectQuery = `
-      SELECT
-        r.request_id,
-        r.consumer_id,
-        r.status AS request_status,
-        r.delivery_status,
-        l.listing_id,
-        l.cook_id,
-        l.available_portions,
-        l.status AS listing_status,
-        TIMESTAMPDIFF(HOUR, l.creation_timestamp, NOW()) AS listing_age_hours
-      FROM Request r
-      INNER JOIN Listing l ON r.listing_id = l.listing_id
-      WHERE r.request_id = ?
-      FOR UPDATE
-    `;
+            SELECT
+                r.request_id,
+                r.consumer_id,
+                r.status AS request_status,
+                r.delivery_status,
+                l.listing_id,
+                l.cook_id,
+                l.available_portions,
+                l.status AS listing_status,
+                TIMESTAMPDIFF(HOUR, l.creation_timestamp, NOW()) AS listing_age_hours
+            FROM Request r
+                     INNER JOIN Listing l ON r.listing_id = l.listing_id
+            WHERE r.request_id = ?
+                FOR UPDATE
+        `;
 
         db.query(selectQuery, [requestId], (selectErr, rows) => {
             if (selectErr) {
@@ -304,10 +304,10 @@ router.patch('/:requestId/approve', (req, res) => {
 
             if (request.listing_age_hours >= 48 || request.listing_status === 'Deleted') {
                 const expireQuery = `
-          UPDATE Listing
-          SET status = 'Deleted'
-          WHERE listing_id = ?
-        `;
+                    UPDATE Listing
+                    SET status = 'Deleted'
+                    WHERE listing_id = ?
+                `;
 
                 return db.query(expireQuery, [request.listing_id], (expireErr) => {
                     if (expireErr) {
@@ -338,11 +338,11 @@ router.patch('/:requestId/approve', (req, res) => {
             }
 
             const approveQuery = `
-        UPDATE Request
-        SET status = 'Approved',
-            decision_timestamp = NOW()
-        WHERE request_id = ?
-      `;
+                UPDATE Request
+                SET status = 'Approved',
+                    decision_timestamp = NOW()
+                WHERE request_id = ?
+            `;
 
             db.query(approveQuery, [requestId], (approveErr) => {
                 if (approveErr) {
@@ -350,14 +350,14 @@ router.patch('/:requestId/approve', (req, res) => {
                 }
 
                 const updateListingQuery = `
-          UPDATE Listing
-          SET available_portions = available_portions - 1,
-              status = CASE
-                WHEN available_portions - 1 = 0 THEN 'Inactive'
-                ELSE 'Active'
-              END
-          WHERE listing_id = ?
-        `;
+                    UPDATE Listing
+                    SET available_portions = available_portions - 1,
+                        status = CASE
+                                     WHEN available_portions - 1 = 0 THEN 'Inactive'
+                                     ELSE 'Active'
+                            END
+                    WHERE listing_id = ?
+                `;
 
                 db.query(updateListingQuery, [request.listing_id], (listingErr) => {
                     if (listingErr) {
@@ -400,15 +400,15 @@ router.patch('/:requestId/reject', (req, res) => {
     }
 
     const query = `
-    UPDATE Request r
-    INNER JOIN Listing l ON r.listing_id = l.listing_id
-    SET r.status = 'Rejected',
-        r.decision_timestamp = NOW()
-    WHERE r.request_id = ?
-      AND l.cook_id = ?
-      AND r.status = 'Pending'
-      AND r.delivery_status = 'Pending'
-  `;
+        UPDATE Request r
+            INNER JOIN Listing l ON r.listing_id = l.listing_id
+        SET r.status = 'Rejected',
+            r.decision_timestamp = NOW()
+        WHERE r.request_id = ?
+          AND l.cook_id = ?
+          AND r.status = 'Pending'
+          AND r.delivery_status = 'Pending'
+    `;
 
     db.query(query, [requestId, cookId], (err, result) => {
         if (err) {
@@ -448,15 +448,15 @@ router.patch('/:requestId/picked-up', (req, res) => {
     }
 
     const query = `
-    UPDATE Request r
-    INNER JOIN Listing l ON r.listing_id = l.listing_id
-    SET r.delivery_status = 'Picked_Up',
-        r.pickup_timestamp = NOW()
-    WHERE r.request_id = ?
-      AND l.cook_id = ?
-      AND r.status = 'Approved'
-      AND r.delivery_status = 'Pending'
-  `;
+        UPDATE Request r
+            INNER JOIN Listing l ON r.listing_id = l.listing_id
+        SET r.delivery_status = 'Picked_Up',
+            r.pickup_timestamp = NOW()
+        WHERE r.request_id = ?
+          AND l.cook_id = ?
+          AND r.status = 'Approved'
+          AND r.delivery_status = 'Pending'
+    `;
 
     db.query(query, [requestId, cookId], (err, result) => {
         if (err) {
@@ -504,17 +504,17 @@ router.patch('/:requestId/no-show', (req, res) => {
         }
 
         const selectQuery = `
-      SELECT
-        r.request_id,
-        r.consumer_id,
-        r.status,
-        r.delivery_status,
-        l.cook_id
-      FROM Request r
-      INNER JOIN Listing l ON r.listing_id = l.listing_id
-      WHERE r.request_id = ?
-      FOR UPDATE
-    `;
+            SELECT
+                r.request_id,
+                r.consumer_id,
+                r.status,
+                r.delivery_status,
+                l.cook_id
+            FROM Request r
+                     INNER JOIN Listing l ON r.listing_id = l.listing_id
+            WHERE r.request_id = ?
+                FOR UPDATE
+        `;
 
         db.query(selectQuery, [requestId], (selectErr, rows) => {
             if (selectErr) {
@@ -548,10 +548,10 @@ router.patch('/:requestId/no-show', (req, res) => {
             }
 
             const updateRequestQuery = `
-        UPDATE Request
-        SET delivery_status = 'No_Show'
-        WHERE request_id = ?
-      `;
+                UPDATE Request
+                SET delivery_status = 'No_Show'
+                WHERE request_id = ?
+            `;
 
             db.query(updateRequestQuery, [requestId], (updateRequestErr) => {
                 if (updateRequestErr) {
@@ -559,10 +559,10 @@ router.patch('/:requestId/no-show', (req, res) => {
                 }
 
                 const penaltyQuery = `
-          UPDATE User
-          SET points = GREATEST(points - 1, 0)
-          WHERE user_id = ?
-        `;
+                    UPDATE User
+                    SET points = GREATEST(points - 1, 0)
+                    WHERE user_id = ?
+                `;
 
                 db.query(penaltyQuery, [request.consumer_id], (penaltyErr) => {
                     if (penaltyErr) {

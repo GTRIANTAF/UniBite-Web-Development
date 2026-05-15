@@ -54,21 +54,21 @@ router.post('/', (req, res) => {
         }
 
         const selectQuery = `
-      SELECT
-        r.request_id,
-        r.consumer_id,
-        r.status,
-        r.delivery_status,
-        r.pickup_timestamp,
-        r.rating_penalty_applied,
-        l.cook_id,
-        existing_rating.rating_id
-      FROM Request r
-      INNER JOIN Listing l ON r.listing_id = l.listing_id
-      LEFT JOIN Rating existing_rating ON r.request_id = existing_rating.request_id
-      WHERE r.request_id = ?
-      FOR UPDATE
-    `;
+            SELECT
+                r.request_id,
+                r.consumer_id,
+                r.status,
+                r.delivery_status,
+                r.pickup_timestamp,
+                r.rating_penalty_applied,
+                l.cook_id,
+                existing_rating.rating_id
+            FROM Request r
+                     INNER JOIN Listing l ON r.listing_id = l.listing_id
+                     LEFT JOIN Rating existing_rating ON r.request_id = existing_rating.request_id
+            WHERE r.request_id = ?
+                FOR UPDATE
+        `;
 
         db.query(selectQuery, [requestId], (selectErr, rows) => {
             if (selectErr) {
@@ -138,10 +138,10 @@ router.post('/', (req, res) => {
                     }
 
                     const penaltyQuery = `
-            UPDATE User
-            SET points = GREATEST(points - 1, 0)
-            WHERE user_id = ?
-          `;
+                        UPDATE User
+                        SET points = GREATEST(points - 1, 0)
+                        WHERE user_id = ?
+                    `;
 
                     db.query(penaltyQuery, [consumerId], (penaltyErr) => {
                         if (penaltyErr) {
@@ -149,10 +149,10 @@ router.post('/', (req, res) => {
                         }
 
                         const markPenaltyQuery = `
-              UPDATE Request
-              SET rating_penalty_applied = TRUE
-              WHERE request_id = ?
-            `;
+                            UPDATE Request
+                            SET rating_penalty_applied = TRUE
+                            WHERE request_id = ?
+                        `;
 
                         db.query(markPenaltyQuery, [requestId], (markErr) => {
                             if (markErr) {
@@ -181,9 +181,9 @@ router.post('/', (req, res) => {
                 const cookPointsToAdd = bonusAwarded ? 2 : 1;
 
                 const insertRatingQuery = `
-          INSERT INTO Rating (request_id, score, bonus_awarded)
-          VALUES (?, ?, ?)
-        `;
+                    INSERT INTO Rating (request_id, score, bonus_awarded)
+                    VALUES (?, ?, ?)
+                `;
 
                 db.query(insertRatingQuery, [requestId, String(score), bonusAwarded], (insertErr, result) => {
                     if (insertErr) {
@@ -191,10 +191,10 @@ router.post('/', (req, res) => {
                     }
 
                     const cookPointsQuery = `
-            UPDATE User
-            SET points = points + ?
-            WHERE user_id = ?
-          `;
+                        UPDATE User
+                        SET points = points + ?
+                        WHERE user_id = ?
+                    `;
 
                     db.query(cookPointsQuery, [cookPointsToAdd, request.cook_id], (pointsErr) => {
                         if (pointsErr) {
@@ -236,19 +236,19 @@ router.patch('/apply-penalties', (req, res) => {
         }
 
         const selectOverdueQuery = `
-      SELECT
-        r.request_id,
-        r.consumer_id
-      FROM Request r
-      LEFT JOIN Rating rating ON r.request_id = rating.request_id
-      WHERE r.status = 'Approved'
-        AND r.delivery_status = 'Picked_Up'
-        AND r.pickup_timestamp IS NOT NULL
-        AND r.pickup_timestamp <= NOW() - INTERVAL 48 HOUR
-        AND r.rating_penalty_applied = FALSE
-        AND rating.rating_id IS NULL
-      FOR UPDATE
-    `;
+            SELECT
+                r.request_id,
+                r.consumer_id
+            FROM Request r
+                     LEFT JOIN Rating rating ON r.request_id = rating.request_id
+            WHERE r.status = 'Approved'
+              AND r.delivery_status = 'Picked_Up'
+              AND r.pickup_timestamp IS NOT NULL
+              AND r.pickup_timestamp <= NOW() - INTERVAL 48 HOUR
+              AND r.rating_penalty_applied = FALSE
+              AND rating.rating_id IS NULL
+                FOR UPDATE
+        `;
 
         db.query(selectOverdueQuery, (selectErr, overdueRequests) => {
             if (selectErr) {
@@ -275,10 +275,10 @@ router.patch('/apply-penalties', (req, res) => {
             const consumerIds = overdueRequests.map((request) => request.consumer_id);
 
             const penaltyQuery = `
-        UPDATE User
-        SET points = GREATEST(points - 1, 0)
-        WHERE user_id IN (?)
-      `;
+                UPDATE User
+                SET points = GREATEST(points - 1, 0)
+                WHERE user_id IN (?)
+            `;
 
             db.query(penaltyQuery, [consumerIds], (penaltyErr) => {
                 if (penaltyErr) {
@@ -286,10 +286,10 @@ router.patch('/apply-penalties', (req, res) => {
                 }
 
                 const markPenaltyQuery = `
-          UPDATE Request
-          SET rating_penalty_applied = TRUE
-          WHERE request_id IN (?)
-        `;
+                    UPDATE Request
+                    SET rating_penalty_applied = TRUE
+                    WHERE request_id IN (?)
+                `;
 
                 db.query(markPenaltyQuery, [requestIds], (markErr) => {
                     if (markErr) {

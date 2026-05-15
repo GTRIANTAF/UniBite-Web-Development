@@ -20,16 +20,44 @@ function normalizeOptionalText(value) {
 
 function refreshListingStatuses(callback) {
     const query = `
-    UPDATE Listing
-    SET status = CASE
-      WHEN creation_timestamp <= NOW() - INTERVAL 48 HOUR THEN 'Deleted'
-      WHEN available_portions = 0 THEN 'Inactive'
-      ELSE 'Active'
-    END
-    WHERE status != 'Deleted'
-  `;
+        UPDATE Listing
+        SET status = CASE
+            WHEN creation_timestamp <= NOW() - INTERVAL 48 HOUR THEN 'Deleted'
+            WHEN available_portions = 0 THEN 'Inactive'
+            ELSE 'Active'
+        END
+        WHERE status != 'Deleted'
+    `;
 
     db.query(query, callback);
+}
+
+async function geocodePickupLocation(pickupLocation, pickupBuilding) {
+    let latitude = 38.2462;
+    let longitude = 21.7351;
+
+    try {
+        const addressText = `${pickupLocation}, ${pickupBuilding}, Πάτρα, Ελλάδα`;
+        const addressQuery = encodeURIComponent(addressText);
+        const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${addressQuery}&limit=1`;
+
+        const geoResponse = await fetch(geocodeUrl, {
+            headers: {
+                'User-Agent': 'UniBite_Student_Project_Upatras'
+            }
+        });
+
+        const geoData = await geoResponse.json();
+
+        if (geoData && geoData.length > 0) {
+            latitude = parseFloat(geoData[0].lat);
+            longitude = parseFloat(geoData[0].lon);
+        }
+    } catch (error) {
+        console.error('Nominatim geocoding error:', error.message);
+    }
+
+    return { latitude, longitude };
 }
 
 // GET all visible listings
@@ -78,12 +106,12 @@ router.get('/cook/:cookId', (req, res) => {
         }
 
         const query = `
-      SELECT *
-      FROM Listing
-      WHERE cook_id = ?
-        AND status != 'Deleted'
-      ORDER BY creation_timestamp DESC
-    `;
+            SELECT *
+            FROM Listing
+            WHERE cook_id = ?
+              AND status != 'Deleted'
+            ORDER BY creation_timestamp DESC
+        `;
 
         db.query(query, [cookId], (err, results) => {
             if (err) {
@@ -117,17 +145,19 @@ router.get('/:id/pickup-info', (req, res) => {
         }
 
         const query = `
-      SELECT
-        listing_id,
-        title,
-        pickup_location,
-        pickup_building,
-        pickup_details,
-        pickup_time
-      FROM Listing
-      WHERE listing_id = ?
-        AND status != 'Deleted'
-    `;
+            SELECT
+                listing_id,
+                title,
+                pickup_location,
+                pickup_building,
+                pickup_details,
+                pickup_time,
+                latitude,
+                longitude
+            FROM Listing
+            WHERE listing_id = ?
+              AND status != 'Deleted'
+        `;
 
         db.query(query, [listingId], (err, results) => {
             if (err) {
@@ -167,11 +197,11 @@ router.get('/:id', (req, res) => {
         }
 
         const query = `
-      SELECT *
-      FROM Listing
-      WHERE listing_id = ?
-        AND status != 'Deleted'
-    `;
+            SELECT *
+            FROM Listing
+            WHERE listing_id = ?
+              AND status != 'Deleted'
+        `;
 
         db.query(query, [listingId], (err, results) => {
             if (err) {
@@ -195,64 +225,92 @@ router.get('/:id', (req, res) => {
 // CREATE listing
 router.post('/', async (req, res) => {
     const {
-        cook_id, title, description, photo_url, allergens,
-        pickup_location, pickup_building, pickup_details, pickup_time, total_portions
+        cook_id,
+        title,
+        description,
+        photo_url,
+        allergens,
+        pickup_location,
+        pickup_building,
+        pickup_details,
+        pickup_time,
+        total_portions
     } = req.body;
 
-    if (!cook_id || !title || !description || !pickup_location || !pickup_building || !pickup_time || !total_portions) {
-        return res.status(400).json({ error: 'Missing required fields' });
+    if (
+        !cook_id ||
+        !title ||
+        !description ||
+        !pickup_location ||
+        !pickup_building ||
+        !pickup_time ||
+        !total_portions
+    ) {
+        return res.status(400).json({
+            error: 'Missing required fields'
+        });
     }
 
     const cookId = Number(cook_id);
     const portions = Number(total_portions);
 
     if (!Number.isInteger(cookId) || cookId <= 0) {
-        return res.status(400).json({ error: 'Invalid cook id' });
+        return res.status(400).json({
+            error: 'Invalid cook id'
+        });
     }
 
     if (!isPositiveInteger(portions)) {
-        return res.status(400).json({ error: 'Total portions must be a positive integer' });
-    }
-
-    // Προεπιλογή: Κέντρο Πάτρας
-    let lat = 38.2462;
-    let lon = 21.7351;
-
-    try {
-        const addressQuery = encodeURIComponent(pickup_location.trim() + ", Πάτρα, Ελλάδα");
-        const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${addressQuery}&limit=1`;
-
-        const geoResponse = await fetch(geocodeUrl, {
-            headers: { 'User-Agent': 'UniBite_Student_Project_Upatras' }
+        return res.status(400).json({
+            error: 'Total portions must be a positive integer'
         });
-        const geoData = await geoResponse.json();
-
-        if (geoData && geoData.length > 0) {
-            lat = parseFloat(geoData[0].lat);
-            lon = parseFloat(geoData[0].lon);
-            console.log(`Geocoding Επιτυχές για '${pickup_location}': ${lat}, ${lon}`);
-        } else {
-            console.log(`Αποτυχία Geocoding για '${pickup_location}'. Χρήση προεπιλογής.`);
-        }
-    } catch (error) {
-        console.error("Σφάλμα API Nominatim:", error.message);
     }
 
-    const checkCookQuery = `SELECT user_id FROM User WHERE user_id = ?`;
+    const coordinates = await geocodePickupLocation(
+        pickup_location.trim(),
+        pickup_building.trim()
+    );
+
+    const checkCookQuery = `
+        SELECT user_id
+        FROM User
+        WHERE user_id = ?
+    `;
 
     db.query(checkCookQuery, [cookId], (cookErr, cookResults) => {
-        if (cookErr) return res.status(500).json({ error: 'Database error', details: cookErr.message });
-        if (cookResults.length === 0) return res.status(404).json({ error: 'Cook not found' });
+        if (cookErr) {
+            return res.status(500).json({
+                error: 'Database error',
+                details: cookErr.message
+            });
+        }
+
+        if (cookResults.length === 0) {
+            return res.status(404).json({
+                error: 'Cook not found'
+            });
+        }
 
         const query = `
-      INSERT INTO Listing
-      (
-        cook_id, title, description, photo_url, allergens,
-        pickup_location, pickup_building, pickup_details, pickup_time,
-        latitude, longitude, total_portions, available_portions, status
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Active')
-    `;
+            INSERT INTO Listing
+            (
+                cook_id,
+                title,
+                description,
+                photo_url,
+                allergens,
+                pickup_location,
+                pickup_building,
+                pickup_details,
+                pickup_time,
+                latitude,
+                longitude,
+                total_portions,
+                available_portions,
+                status
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Active')
+        `;
 
         db.query(
             query,
@@ -266,18 +324,23 @@ router.post('/', async (req, res) => {
                 pickup_building.trim(),
                 normalizeOptionalText(pickup_details),
                 pickup_time,
-                lat,
-                lon,
+                coordinates.latitude,
+                coordinates.longitude,
                 portions,
                 portions
             ],
             (err, result) => {
-                if (err) return res.status(500).json({ error: 'Database error', details: err.message });
+                if (err) {
+                    return res.status(500).json({
+                        error: 'Database error',
+                        details: err.message
+                    });
+                }
 
                 res.status(201).json({
                     message: 'Listing created successfully',
                     listingId: result.insertId,
-                    coordinates: { lat, lon }
+                    coordinates
                 });
             }
         );
@@ -360,46 +423,31 @@ router.put('/:id', async (req, res) => {
         });
     }
 
-    let lat = 38.2462;
-    let lon = 21.7351;
-
-    try {
-        const addressQuery = encodeURIComponent(pickup_location.trim() + ", Πάτρα, Ελλάδα");
-        const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${addressQuery}&limit=1`;
-
-        const geoResponse = await fetch(geocodeUrl, {
-            headers: { 'User-Agent': 'UniBite_Student_Project_Upatras' }
-        });
-        const geoData = await geoResponse.json();
-
-        if (geoData && geoData.length > 0) {
-            lat = parseFloat(geoData[0].lat);
-            lon = parseFloat(geoData[0].lon);
-        }
-    } catch (error) {
-        console.error("Σφάλμα API Nominatim (Update):", error.message);
-    }
+    const coordinates = await geocodePickupLocation(
+        pickup_location.trim(),
+        pickup_building.trim()
+    );
 
     const query = `
-    UPDATE Listing
-    SET
-      title = ?,
-      description = ?,
-      photo_url = ?,
-      allergens = ?,
-      pickup_location = ?,
-      pickup_building = ?,
-      pickup_details = ?,
-      pickup_time = ?,
-      latitude = ?,
-      longitude = ?,
-      total_portions = ?,
-      available_portions = ?,
-      status = ?
-    WHERE listing_id = ?
-      AND cook_id = ?
-      AND status != 'Deleted'
-  `;
+        UPDATE Listing
+        SET
+            title = ?,
+            description = ?,
+            photo_url = ?,
+            allergens = ?,
+            pickup_location = ?,
+            pickup_building = ?,
+            pickup_details = ?,
+            pickup_time = ?,
+            latitude = ?,
+            longitude = ?,
+            total_portions = ?,
+            available_portions = ?,
+            status = ?
+        WHERE listing_id = ?
+          AND cook_id = ?
+          AND status != 'Deleted'
+    `;
 
     db.query(
         query,
@@ -412,8 +460,8 @@ router.put('/:id', async (req, res) => {
             pickup_building.trim(),
             normalizeOptionalText(pickup_details),
             pickup_time,
-            lat,
-            lon,
+            coordinates.latitude,
+            coordinates.longitude,
             portions,
             available,
             listingStatus,
@@ -435,7 +483,8 @@ router.put('/:id', async (req, res) => {
             }
 
             res.json({
-                message: 'Listing updated successfully'
+                message: 'Listing updated successfully',
+                coordinates
             });
         }
     );
@@ -459,12 +508,12 @@ router.delete('/:id', (req, res) => {
     }
 
     const query = `
-    UPDATE Listing
-    SET status = 'Deleted'
-    WHERE listing_id = ?
-      AND cook_id = ?
-      AND status != 'Deleted'
-  `;
+        UPDATE Listing
+        SET status = 'Deleted'
+        WHERE listing_id = ?
+          AND cook_id = ?
+          AND status != 'Deleted'
+    `;
 
     db.query(query, [listingId, cookId], (err, result) => {
         if (err) {
