@@ -3,61 +3,61 @@ const router = express.Router();
 const db = require('../database_connection');
 
 function isPositiveInteger(value) {
-    const number = Number(value);
-    return Number.isInteger(number) && number > 0;
+  const number = Number(value);
+  return Number.isInteger(number) && number > 0;
 }
 
 function isValidMonth(value) {
-    return /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
 }
 
 function requireAdmin(req, res, next) {
-    const adminId = Number(req.query.admin_id || (req.body && req.body.admin_id));
+  const adminId = Number(req.query.admin_id || (req.body && req.body.admin_id));
 
-    if (!isPositiveInteger(adminId)) {
-        return res.status(400).json({
-            error: 'Invalid admin id'
-        });
-    }
+  if (!isPositiveInteger(adminId)) {
+    return res.status(400).json({
+      error: 'Invalid admin id'
+    });
+  }
 
-    const query = `
+  const query = `
     SELECT user_id
     FROM User
     WHERE user_id = ?
       AND is_admin = TRUE
   `;
 
-    db.query(query, [adminId], (err, results) => {
-        if (err) {
-            return res.status(500).json({
-                error: 'Database error',
-                details: err.message
-            });
-        }
+  db.query(query, [adminId], (err, results) => {
+    if (err) {
+      return res.status(500).json({
+        error: 'Database error',
+        details: err.message
+      });
+    }
 
-        if (results.length === 0) {
-            return res.status(403).json({
-                error: 'Admin access required'
-            });
-        }
+    if (results.length === 0) {
+      return res.status(403).json({
+        error: 'Admin access required'
+      });
+    }
 
-        next();
-    });
+    next();
+  });
 }
 
 // GET monthly platform statistics
 router.get('/stats/monthly', requireAdmin, (req, res) => {
-    const month = req.query.month;
+  const month = req.query.month;
 
-    if (!month || !isValidMonth(month)) {
-        return res.status(400).json({
-            error: 'Month must be provided in YYYY-MM format'
-        });
-    }
+  if (!month || !isValidMonth(month)) {
+    return res.status(400).json({
+      error: 'Month must be provided in YYYY-MM format'
+    });
+  }
 
-    const monthStart = `${month}-01`;
+  const monthStart = `${month}-01`;
 
-    const query = `
+  const query = `
     SELECT
       (SELECT COUNT(*) FROM User) AS total_users,
 
@@ -176,50 +176,50 @@ router.get('/stats/monthly', requireAdmin, (req, res) => {
       ) AS bonus_ratings
   `;
 
-    const params = [
-        monthStart, monthStart,
-        monthStart, monthStart,
-        monthStart, monthStart,
-        monthStart, monthStart,
-        monthStart, monthStart,
-        monthStart, monthStart,
-        monthStart, monthStart,
-        monthStart, monthStart,
-        monthStart, monthStart,
-        monthStart, monthStart,
-        monthStart, monthStart,
-        monthStart, monthStart,
-        monthStart, monthStart,
-        monthStart, monthStart,
-        monthStart, monthStart
-    ];
+  const params = [
+    monthStart, monthStart,
+    monthStart, monthStart,
+    monthStart, monthStart,
+    monthStart, monthStart,
+    monthStart, monthStart,
+    monthStart, monthStart,
+    monthStart, monthStart,
+    monthStart, monthStart,
+    monthStart, monthStart,
+    monthStart, monthStart,
+    monthStart, monthStart,
+    monthStart, monthStart,
+    monthStart, monthStart,
+    monthStart, monthStart,
+    monthStart, monthStart
+  ];
 
-    db.query(query, params, (err, results) => {
-        if (err) {
-            return res.status(500).json({
-                error: 'Database error',
-                details: err.message
-            });
-        }
+  db.query(query, params, (err, results) => {
+    if (err) {
+      return res.status(500).json({
+        error: 'Database error',
+        details: err.message
+      });
+    }
 
-        res.json({
-            month,
-            stats: results[0]
-        });
+    res.json({
+      month,
+      stats: results[0]
     });
+  });
 });
 
 // GET top donors leaderboard
 router.get('/leaderboard/top-donors', requireAdmin, (req, res) => {
-    const limit = Number(req.query.limit || 10);
+  const limit = Number(req.query.limit || 10);
 
-    if (!isPositiveInteger(limit)) {
-        return res.status(400).json({
-            error: 'Invalid limit'
-        });
-    }
+  if (!isPositiveInteger(limit)) {
+    return res.status(400).json({
+      error: 'Invalid limit'
+    });
+  }
 
-    const query = `
+  const query = `
     SELECT
       u.user_id,
       u.username,
@@ -236,29 +236,29 @@ router.get('/leaderboard/top-donors', requireAdmin, (req, res) => {
     LIMIT ?
   `;
 
-    db.query(query, [limit], (err, results) => {
-        if (err) {
-            return res.status(500).json({
-                error: 'Database error',
-                details: err.message
-            });
-        }
+  db.query(query, [limit], (err, results) => {
+    if (err) {
+      return res.status(500).json({
+        error: 'Database error',
+        details: err.message
+      });
+    }
 
-        res.json(results);
-    });
+    res.json(results);
+  });
 });
 
 // GET highest rated cooks leaderboard
 router.get('/leaderboard/highest-rated', requireAdmin, (req, res) => {
-    const limit = Number(req.query.limit || 10);
+  const limit = Number(req.query.limit || 10);
 
-    if (!isPositiveInteger(limit)) {
-        return res.status(400).json({
-            error: 'Invalid limit'
-        });
-    }
+  if (!isPositiveInteger(limit)) {
+    return res.status(400).json({
+      error: 'Invalid limit'
+    });
+  }
 
-    const query = `
+  const query = `
     SELECT
       u.user_id,
       u.username,
@@ -275,29 +275,29 @@ router.get('/leaderboard/highest-rated', requireAdmin, (req, res) => {
     LIMIT ?
   `;
 
-    db.query(query, [limit], (err, results) => {
-        if (err) {
-            return res.status(500).json({
-                error: 'Database error',
-                details: err.message
-            });
-        }
+  db.query(query, [limit], (err, results) => {
+    if (err) {
+      return res.status(500).json({
+        error: 'Database error',
+        details: err.message
+      });
+    }
 
-        res.json(results);
-    });
+    res.json(results);
+  });
 });
 
 // GET combined leaderboard
 router.get('/leaderboard', requireAdmin, (req, res) => {
-    const limit = Number(req.query.limit || 10);
+  const limit = Number(req.query.limit || 10);
 
-    if (!isPositiveInteger(limit)) {
-        return res.status(400).json({
-            error: 'Invalid limit'
-        });
-    }
+  if (!isPositiveInteger(limit)) {
+    return res.status(400).json({
+      error: 'Invalid limit'
+    });
+  }
 
-    const topDonorsQuery = `
+  const topDonorsQuery = `
     SELECT
       u.user_id,
       u.username,
@@ -313,7 +313,7 @@ router.get('/leaderboard', requireAdmin, (req, res) => {
     LIMIT ?
   `;
 
-    const highestRatedQuery = `
+  const highestRatedQuery = `
     SELECT
       u.user_id,
       u.username,
@@ -328,28 +328,28 @@ router.get('/leaderboard', requireAdmin, (req, res) => {
     LIMIT ?
   `;
 
-    db.query(topDonorsQuery, [limit], (donorErr, topDonors) => {
-        if (donorErr) {
-            return res.status(500).json({
-                error: 'Database error',
-                details: donorErr.message
-            });
-        }
+  db.query(topDonorsQuery, [limit], (donorErr, topDonors) => {
+    if (donorErr) {
+      return res.status(500).json({
+        error: 'Database error',
+        details: donorErr.message
+      });
+    }
 
-        db.query(highestRatedQuery, [limit], (ratingErr, highestRated) => {
-            if (ratingErr) {
-                return res.status(500).json({
-                    error: 'Database error',
-                    details: ratingErr.message
-                });
-            }
-
-            res.json({
-                topDonors,
-                highestRated
-            });
+    db.query(highestRatedQuery, [limit], (ratingErr, highestRated) => {
+      if (ratingErr) {
+        return res.status(500).json({
+          error: 'Database error',
+          details: ratingErr.message
         });
+      }
+
+      res.json({
+        topDonors,
+        highestRated
+      });
     });
+  });
 });
 
 module.exports = router;

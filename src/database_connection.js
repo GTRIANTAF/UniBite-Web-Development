@@ -12,6 +12,7 @@ db.connect((err) => {
         console.error('Σφάλμα σύνδεσης με τη βάση:', err.message);
         return;
     }
+
     console.log('Συνδέθηκε επιτυχώς στη MySQL (UniBite)!');
 });
 

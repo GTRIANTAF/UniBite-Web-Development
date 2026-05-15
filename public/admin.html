@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniBite - Admin Panel</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navigation">
+    <div class="logo">UniBite</div>
+
+    <ul class="nav-links">
+        <li>
+            <a href="start.html">
+                <span class="material-icons">home</span>
+                <span class="nav-text">Start</span>
+            </a>
+        </li>
+        <li>
+            <a href="admin.html" class="active">
+                <span class="material-icons">admin_panel_settings</span>
+                <span class="nav-text">Admin</span>
+            </a>
+        </li>
+        <li>
+            <a href="start.html">
+                <span class="material-icons">logout</span>
+                <span class="nav-text">Exit</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<main class="main-content admin-page">
+
+    <header class="admin-header">
+        <div>
+            <h1>Admin Panel</h1>
+            <p>Στατιστικά χρήσης πλατφόρμας και κατάταξη χρηστών.</p>
+        </div>
+
+        <div class="admin-controls">
+            <input type="month" id="admin-month">
+            <button type="button" id="refresh-admin-btn">
+                <span class="material-icons">refresh</span>
+                Ανανέωση
+            </button>
+        </div>
+    </header>
+
+    <section class="admin-stats-grid">
+        <article class="admin-stat-card">
+            <span class="material-icons">group</span>
+            <div>
+                <p>Χρήστες</p>
+                <h2 id="stat-users">0</h2>
+            </div>
+        </article>
+
+        <article class="admin-stat-card">
+            <span class="material-icons">restaurant</span>
+            <div>
+                <p>Αγγελίες</p>
+                <h2 id="stat-listings">0</h2>
+            </div>
+        </article>
+
+        <article class="admin-stat-card">
+            <span class="material-icons">lunch_dining</span>
+            <div>
+                <p>Μερίδες</p>
+                <h2 id="stat-portions">0</h2>
+            </div>
+        </article>
+
+        <article class="admin-stat-card">
+            <span class="material-icons">star</span>
+            <div>
+                <p>Μέση Βαθμολογία</p>
+                <h2 id="stat-rating">0</h2>
+            </div>
+        </article>
+    </section>
+
+    <section class="admin-panels">
+        <article class="admin-panel-card">
+            <div class="admin-panel-header">
+                <h2>Κατάσταση Αιτημάτων</h2>
+            </div>
+
+            <div class="admin-mini-grid">
+                <div>
+                    <span id="stat-requests">0</span>
+                    <p>Σύνολο</p>
+                </div>
+                <div>
+                    <span id="stat-pending">0</span>
+                    <p>Pending</p>
+                </div>
+                <div>
+                    <span id="stat-approved">0</span>
+                    <p>Approved</p>
+                </div>
+                <div>
+                    <span id="stat-rejected">0</span>
+                    <p>Rejected</p>
+                </div>
+                <div>
+                    <span id="stat-picked-up">0</span>
+                    <p>Picked Up</p>
+                </div>
+                <div>
+                    <span id="stat-no-show">0</span>
+                    <p>No Show</p>
+                </div>
+            </div>
+        </article>
+
+        <article class="admin-panel-card">
+            <div class="admin-panel-header">
+                <h2>Κατάσταση Αγγελιών</h2>
+            </div>
+
+            <div class="admin-mini-grid">
+                <div>
+                    <span id="stat-active-listings">0</span>
+                    <p>Active</p>
+                </div>
+                <div>
+                    <span id="stat-inactive-listings">0</span>
+                    <p>Inactive</p>
+                </div>
+                <div>
+                    <span id="stat-deleted-listings">0</span>
+                    <p>Deleted</p>
+                </div>
+                <div>
+                    <span id="stat-reserved-portions">0</span>
+                    <p>Reserved Portions</p>
+                </div>
+                <div>
+                    <span id="stat-ratings">0</span>
+                    <p>Ratings</p>
+                </div>
+                <div>
+                    <span id="stat-bonus-ratings">0</span>
+                    <p>Bonus Ratings</p>
+                </div>
+            </div>
+        </article>
+    </section>
+
+    <section class="admin-leaderboards">
+        <article class="admin-table-card">
+            <div class="admin-panel-header">
+                <h2>Top Donors</h2>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Χρήστης</th>
+                        <th>Μερίδες</th>
+                        <th>Αγγελίες</th>
+                    </tr>
+                </thead>
+                <tbody id="top-donors-body">
+                    <tr><td colspan="4">Φόρτωση...</td></tr>
+                </tbody>
+            </table>
+        </article>
+
+        <article class="admin-table-card">
+            <div class="admin-panel-header">
+                <h2>Highest Rated</h2>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Χρήστης</th>
+                        <th>Μ.Ο.</th>
+                        <th>Ratings</th>
+                    </tr>
+                </thead>
+                <tbody id="highest-rated-body">
+                    <tr><td colspan="4">Φόρτωση...</td></tr>
+                </tbody>
+            </table>
+        </article>
+    </section>
+
+    <div id="admin-message" class="form-message hidden-view"></div>
+
+</main>
+
+<script src="admin.js"></script>
+</body>
+</html>

@@ -25,20 +25,32 @@
             text-align: center;
             box-sizing: border-box;
         }
-        .title-font { font-family: 'Plus Jakarta Sans', sans-serif; color: #FF5722; font-size: 28px; margin-bottom: 20px;}
+        .title-font { font-family: 'Plus Jakarta Sans', sans-serif; color: #FF5722; font-size: 28px; margin-bottom: 20px; }
         .auth-input {
-            width: 100%; padding: 12px; margin: 10px 0;
-            border: 1px solid #ccc; border-radius: 8px; font-size: 16px;
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
             box-sizing: border-box;
         }
         .btn-auth {
-            width: 100%; padding: 12px; background: #FF5722; color: white;
-            border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
-            font-size: 16px; margin-top: 10px; transition: 0.3s;
+            width: 100%;
+            padding: 12px;
+            background: #FF5722;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: 0.3s;
         }
         .btn-auth:hover { background: #e64a19; }
         .switch-text { margin-top: 20px; font-size: 14px; color: #666; }
-        .switch-text a { color: #4CAF50; font-weight: bold; text-decoration: none; cursor: pointer;}
+        .switch-text a { color: #4CAF50; font-weight: bold; text-decoration: none; cursor: pointer; }
         .hidden-view { display: none !important; }
 
         @media (min-width: 480px) {
@@ -60,7 +72,7 @@
 
     <input type="text" id="reg-username" class="auth-input hidden-view" placeholder="Όνομα Χρήστη">
 
-    <input type="email" id="auth-email" class="auth-input" placeholder= "Email">
+    <input type="email" id="auth-email" class="auth-input" placeholder="Email">
     <input type="password" id="auth-pass" class="auth-input" placeholder="Κωδικός Πρόσβασης">
 
     <button id="auth-btn" onclick="handleAuth()" class="btn-auth">Είσοδος</button>
@@ -73,6 +85,7 @@
 
 <script>
     let isLoginMode = true;
+
     function toggleAuthMode() {
         isLoginMode = !isLoginMode;
 
@@ -83,66 +96,72 @@
         const usernameInput = document.getElementById('reg-username');
 
         if (isLoginMode) {
-            title.innerText = "UniBite Login";
-            btn.innerText = "Είσοδος";
-            switchText.innerText = "Δεν έχεις λογαριασμό;";
-            switchLink.innerText = "Εγγραφή";
+            title.innerText = 'UniBite Login';
+            btn.innerText = 'Είσοδος';
+            switchText.innerText = 'Δεν έχεις λογαριασμό;';
+            switchLink.innerText = 'Εγγραφή';
             usernameInput.classList.add('hidden-view');
         } else {
-            title.innerText = "Register";
-            btn.innerText = "Εγγραφή";
-            switchText.innerText = "Έχεις ήδη λογαριασμό;";
-            switchLink.innerText = "Είσοδος";
+            title.innerText = 'Register';
+            btn.innerText = 'Εγγραφή';
+            switchText.innerText = 'Έχεις ήδη λογαριασμό;';
+            switchLink.innerText = 'Είσοδος';
             usernameInput.classList.remove('hidden-view');
         }
     }
 
-    // Συνάρτηση που μιλάει με το Backend (Register ή Login)
     async function handleAuth() {
         const email = document.getElementById('auth-email').value;
         const password = document.getElementById('auth-pass').value;
 
         if (isLoginMode) {
-            // --- LOGIN ---
             try {
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
+
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Αποθηκεύουμε τα στοιχεία του χρήστη!
                     localStorage.setItem('unibite_token', data.token);
                     localStorage.setItem('unibite_user_id', data.user.id);
-                    window.location.href = 'start.html'; // Πάμε στην επιλογή ρόλου!
+                    localStorage.setItem('unibite_is_admin', data.user.is_admin ? '1' : '0');
+
+                    window.location.href = 'start.html';
                 } else {
-                    alert("Σφάλμα: " + data.error);
+                    alert('Σφάλμα: ' + data.error);
                 }
-            } catch (err) { alert("Πρόβλημα σύνδεσης με τον Server."); }
+            } catch (err) {
+                alert('Πρόβλημα σύνδεσης με τον Server.');
+            }
         } else {
-            // --- REGISTER ---
             const username = document.getElementById('reg-username').value;
+
             if (!username || !email || !password) {
-                alert("Συμπλήρωσε όλα τα πεδία!");
+                alert('Συμπλήρωσε όλα τα πεδία!');
                 return;
             }
+
             try {
                 const response = await fetch('/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, email, password })
                 });
+
                 const data = await response.json();
 
                 if (response.ok) {
-                    alert("Επιτυχία! Τώρα μπορείς να κάνεις είσοδο.");
-                    toggleAuthMode(); // Επιστροφή στην Είσοδος
+                    alert('Επιτυχία! Τώρα μπορείς να κάνεις είσοδο.');
+                    toggleAuthMode();
                 } else {
-                    alert("Σφάλμα: " + data.error);
+                    alert('Σφάλμα: ' + data.error);
                 }
-            } catch (err) { alert("Πρόβλημα σύνδεσης με τον Server."); }
+            } catch (err) {
+                alert('Πρόβλημα σύνδεσης με τον Server.');
+            }
         }
     }
 </script>
