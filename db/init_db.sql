@@ -7,7 +7,7 @@ CREATE TABLE User(
     user_id INT AUTO_INCREMENT,
     username VARCHAR(50) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHAR(255),
+    password_hash VARCHAR(255) NOT NULL,
     points INT NOT NULL DEFAULT 5,
     is_admin BOOLEAN NOT NULL DEFAULT FALSE,
     PRIMARY KEY(user_id),
@@ -68,11 +68,11 @@ CREATE INDEX idx_request_listing_id ON Request(listing_id);
 CREATE INDEX idx_request_consumer_id ON Request(consumer_id);
 CREATE INDEX idx_rating_request_id ON Rating(request_id);
 
-INSERT INTO User (username, email, points, is_admin)
+INSERT INTO User (username, email, password_hash, points, is_admin)
 VALUES
-('maria_cook', 'maria@test.com', 5, FALSE),
-('giorgos_user', 'giorgos@test.com', 5, FALSE),
-('admin_user', 'admin@test.com', 5, TRUE);
+('maria_cook', 'maria@test.com', '$2a$10$wUZpW1r8E0RYxVhAP1YtSevbnID8RaT3WBtVxcu3kDcMhgr2XYWmG', 5, FALSE),
+('giorgos_user', 'giorgos@test.com', '$2a$10$wUZpW1r8E0RYxVhAP1YtSevbnID8RaT3WBtVxcu3kDcMhgr2XYWmG', 5, FALSE),
+('admin_user', 'admin@test.com', '$2a$10$wUZpW1r8E0RYxVhAP1YtSevbnID8RaT3WBtVxcu3kDcMhgr2XYWmG', 5, TRUE);
 
 INSERT INTO Listing (
     cook_id,
