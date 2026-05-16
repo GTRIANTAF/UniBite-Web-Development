@@ -7,8 +7,8 @@ if (!CURRENT_USER_ID) {
 
 const map = L.map('map').setView([38.2466, 21.7346], 13);
 const markersLayer = L.layerGroup().addTo(map);
-let userLocation = {lat: 38.2466, lng: 21.7346};
-let userMarker = null
+let userLocation = { lat: 38.2466, lng: 21.7346 };
+let userMarker = null;
 
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 19,
@@ -20,16 +20,11 @@ const mapBtn = document.getElementById('map-view-btn');
 const mapDiv = document.getElementById('map');
 const feedDiv = document.getElementById('dynamic-feed');
 
-const logoutBtn = document.getElementById('btn-logout');
-const btnBecomeCook = document.getElementById('btn-become-cook');
-
 let currentOrderIdToReview = null;
 let currentRating = 0;
 
-// Map function
 function toggleView(showMap) {
     if (showMap) {
-        // Show map - Hidden List
         mapDiv.classList.remove('hidden-view');
         feedDiv.classList.add('hidden-view');
 
@@ -41,7 +36,6 @@ function toggleView(showMap) {
             map.setView([userLocation.lat, userLocation.lng], 13);
         }, 100);
     } else {
-        // Show List - Hidden map
         mapDiv.classList.add('hidden-view');
         feedDiv.classList.remove('hidden-view');
 
@@ -50,21 +44,18 @@ function toggleView(showMap) {
     }
 }
 
-// Distance filter
 function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // Earth Radius (km)
-    // Coordinate Formula
+    const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
 
-    // Haversine Formula for Distance
     const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
         Math.sin(dLon / 2) * Math.sin(dLon / 2);
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // Distance in km
+    return R * c;
 }
 
 function getUserLocation() {
@@ -72,6 +63,7 @@ function getUserLocation() {
         loadFeed();
         return;
     }
+
     navigator.geolocation.getCurrentPosition(
         position => {
             userLocation = {
@@ -82,17 +74,18 @@ function getUserLocation() {
             map.setView([userLocation.lat, userLocation.lng], 13);
 
             if (userMarker) map.removeLayer(userMarker);
+
             userMarker = L.circle([userLocation.lat, userLocation.lng], {
                 radius: 200,
                 color: '#2ecc71',
                 fillColor: '#2ecc71',
                 fillOpacity: 0.5
-            }).addTo(map).bindPopup("You are here!");
+            }).addTo(map).bindPopup('You are here!');
 
             loadFeed();
         },
         error => {
-            console.error("Location denied, using default (Patras).", error);
+            console.error('Location denied, using default Patras.', error);
             loadFeed();
         },
         { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
@@ -102,73 +95,76 @@ function getUserLocation() {
 function filterByDistance(maxKm) {
     const limit = parseFloat(maxKm);
 
-    // 1. Φιλτράρισμα Καρτών
     const cards = document.querySelectorAll('.food-card');
     cards.forEach(card => {
         const d = parseFloat(card.dataset.distance);
         card.style.display = d > limit ? 'none' : 'block';
     });
 
-    // 2. Φιλτράρισμα Markers
     markersLayer.eachLayer(marker => {
         const d = marker.options.distance;
+
         if (d > limit) {
-            map.removeLayer(marker);
-        } else {
-            if (!map.hasLayer(marker)) {
-                marker.addTo(map);
-            }
+            markersLayer.removeLayer(marker);
+        } else if (!markersLayer.hasLayer(marker)) {
+            markersLayer.addLayer(marker);
         }
     });
 }
 
-// Dynamic Feed
+function getReserveButtonText(listing, isExhausted) {
+    if (isExhausted) return 'Sold Out';
+
+    if (listing.user_request_status === 'Pending') {
+        return 'Pending...';
+    }
+
+    if (listing.user_request_status === 'Approved' && listing.user_delivery_status === 'Pending') {
+        return 'Approved';
+    }
+
+    return 'Reserve';
+}
+
+function hasActiveUserRequest(listing) {
+    return (
+        listing.user_request_status === 'Pending' ||
+        (listing.user_request_status === 'Approved' && listing.user_delivery_status === 'Pending')
+    );
+}
+
 function loadFeed() {
     feedContainer.innerHTML = '';
 
     fetch(`/api/listings?userId=${CURRENT_USER_ID}`)
         .then(res => res.json())
         .then(data => {
-            console.log(data)
-            // Check if array empty
-            if (data.length === 0) {
+            console.log(data);
+
+            if (!data || data.length === 0) {
                 feedContainer.innerHTML = '<h3>Δεν υπάρχουν διαθέσιμες αγγελίες.</h3>';
+                markersLayer.clearLayers();
                 return;
             }
 
-            if (typeof markersLayer !== 'undefined') markersLayer.clearLayers();
+            markersLayer.clearLayers();
 
-            // Card drawing
             data.forEach(listing => {
                 const id = listing.listing_id;
                 const portions = listing.available_portions ?? 0;
                 const isExhausted = portions <= 0;
+                const alreadyRequested = hasActiveUserRequest(listing);
+                const buttonText = getReserveButtonText(listing, isExhausted);
+                const isDisabled = isExhausted || alreadyRequested;
 
-                const lat = listing.latitude || 38.2466;
-                const lng = listing.longitude || 21.7346;
+                const lat = parseFloat(listing.latitude) || 38.2466;
+                const lng = parseFloat(listing.longitude) || 21.7346;
+
                 const dist = calculateDistance(userLocation.lat, userLocation.lng, lat, lng);
 
-                const hasReserved = listing.already_requested > 0;
-
-                let btnText = 'Reserve';
-                let btnDisabled = '';
-                let btnStyle = '';
-
-                if (hasReserved) {
-                    btnText = 'Already Reserved';
-                    btnDisabled = 'disabled';
-                    btnStyle = 'background-color: gray; cursor: not-allowed;';
-                } else if (isExhausted) {
-                    btnText = 'Sold Out';
-                    btnDisabled = 'disabled';
-                    btnStyle = 'background-color: gray; cursor: not-allowed;';
-                }
-
-                // List View
                 const card = document.createElement('article');
                 card.className = `food-card ${isExhausted ? 'noAvailability' : ''}`;
-
-                card.dataset.distance = dist; // Τώρα βρίσκει κανονικά το dist!
+                card.dataset.distance = dist;
 
                 card.innerHTML = `
                     <div class="card-img-container">
@@ -180,39 +176,40 @@ function loadFeed() {
                     <div class="card-info">
                         <div class="info-top">
                             <h3 class="food-title">${listing.title}</h3>
-                            <p class="location-text"><span class="material-icons">location_on</span>${listing.pickup_location}</p>
+                            <p class="location-text">
+                                <span class="material-icons">location_on</span>${listing.pickup_location}
+                            </p>
                         </div>
                         <p>${listing.description}</p>
                         <div class="info-bottom">
                             <span>Pickup: ${listing.pickup_time ? formatPickupTime(listing.pickup_time) : 'Άμεσα'}</span>
-                            
-                            <button class="btn-reserve" data-listing-id="${id}" ${btnDisabled} style="${btnStyle}">
-                                ${btnText}
+                            <button class="btn-reserve" data-listing-id="${id}" ${isDisabled ? 'disabled' : ''}>
+                                ${buttonText}
                             </button>
-                            
                         </div>
                     </div>
                 `;
+
                 feedContainer.appendChild(card);
 
-                // Map View
-                if (typeof markersLayer !== 'undefined') {
-                    const marker = L.marker([lat, lng]);
-                    marker.options.distance = dist;
-                    marker.bindPopup(`
-                        <div style="text-align:center">
-                            <h4>${listing.title}</h4>
-                            <p>Portions: ${portions}</p>
-                            
-                            <button class="btn-reserve" data-listing-id="${id}" ${btnDisabled} style="${btnStyle}">
-                                ${btnText}
-                            </button>
-                            
-                        </div>
-                    `);
-                    markersLayer.addLayer(marker);
-                }
+                const marker = L.marker([lat, lng]);
+                marker.options.distance = dist;
+                marker.bindPopup(`
+                    <div style="text-align:center">
+                        <h4>${listing.title}</h4>
+                        <p>${listing.pickup_location}</p>
+                        <p>Portions: ${portions}</p>
+                        <button class="btn-reserve" data-listing-id="${id}" ${isDisabled ? 'disabled' : ''}>
+                            ${buttonText}
+                        </button>
+                    </div>
+                `);
+
+                markersLayer.addLayer(marker);
             });
+
+            const radius = document.getElementById('distance-range')?.value;
+            if (radius) filterByDistance(radius);
         })
         .catch(err => {
             console.error(err);
@@ -222,6 +219,11 @@ function loadFeed() {
 
 function formatPickupTime(dateString) {
     const date = new Date(dateString);
+
+    if (Number.isNaN(date.getTime())) {
+        return 'Άγνωστη ώρα';
+    }
+
     return date.toLocaleString('el-GR', {
         dateStyle: 'short',
         timeStyle: 'short'
@@ -237,7 +239,7 @@ function loadOrders() {
     fetch(`/api/orders?userId=${CURRENT_USER_ID}`)
         .then(res => res.json())
         .then(orders => {
-            console.log("Δεδομένα Παραγγελιών:", orders);
+            console.log('Δεδομένα Παραγγελιών:', orders);
 
             if (!orders || orders.length === 0) {
                 ordersContainer.innerHTML = '<h3>Δεν έχεις παραγγελίες ακόμα.</h3>';
@@ -262,17 +264,18 @@ function loadOrders() {
                         <div class="order-icon"><span class="material-icons">restaurant</span></div>
                         <div class="order-info">
                             <h4>${order.title}</h4>
-                            <p>Από: ${order.cook}</p>
+                            <p>Από: ${order.cook || 'Άγνωστος μάγειρας'}</p>
                         </div>
                     </div>
                     ${order.needsReview === 1 ? `
                     <div class="order-actions">
                         <button class="btn-review" onclick="openReviewModal(${order.id}, '${order.title}')">
-                            <span class="material-icons" style="font-size: 14px; vertical-align: middle;">star</span> 
+                            <span class="material-icons" style="font-size: 14px; vertical-align: middle;">star</span>
                             Αξιολόγηση
                         </button>
                     </div>` : ''}
                 `;
+
                 ordersContainer.appendChild(card);
             });
         })
@@ -282,8 +285,6 @@ function loadOrders() {
         });
 }
 
-
-// --- Functions Διαχείρισης Modal & Stars ---
 function openReviewModal(orderId, orderTitle) {
     currentOrderIdToReview = orderId;
     currentRating = 0;
@@ -301,17 +302,21 @@ function openReviewModal(orderId, orderTitle) {
 
 function closeReviewModal() {
     const modal = document.getElementById('review-modal');
+
     if (modal) {
         modal.classList.add('hidden-view');
     }
+
     currentOrderIdToReview = null;
     currentRating = 0;
 }
 
 function updateStars(rating) {
     const stars = document.querySelectorAll('.star-rating .star');
+
     stars.forEach(star => {
         const val = parseInt(star.getAttribute('data-value'));
+
         if (val <= rating) {
             star.innerText = 'star';
             star.classList.add('active');
@@ -323,55 +328,47 @@ function updateStars(rating) {
 }
 
 async function submitReview() {
-    // 1. Έλεγχος αν ο χρήστης επέλεξε αστέρια
     if (!currentRating || currentRating === 0) {
-        alert("Παρακαλώ επίλεξε βαθμολογία (αστέρια) πριν την υποβολή!");
+        alert('Παρακαλώ επίλεξε βαθμολογία (αστέρια) πριν την υποβολή!');
         return;
     }
 
-    // Δεδομένα προς αποστολή - Συμβατά με το API της Μαρίας
     const reviewData = {
         request_id: currentOrderIdToReview,
         consumer_id: CURRENT_USER_ID,
-        score: currentRating,
+        score: currentRating
     };
 
     try {
         const response = await fetch('/api/ratings', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(reviewData)
         });
 
         const result = await response.json();
 
         if (response.ok) {
-            alert("Ευχαριστούμε! " + result.message);
+            alert('Ευχαριστούμε! ' + result.message);
             closeReviewModal();
             loadOrders();
         } else {
-            alert("Σφάλμα: " + result.error);
+            alert('Σφάλμα: ' + result.error);
         }
-
     } catch (error) {
-        console.error("Connection error:", error);
-        alert("Υπήρξε πρόβλημα στη σύνδεση με τον διακομιστή.");
+        console.error('Connection error:', error);
+        alert('Υπήρξε πρόβλημα στη σύνδεση με τον διακομιστή.');
     }
 }
 
-// --- Profile Loader ---
 function loadProfile() {
-    console.log("Αναζήτηση προφίλ για τον χρήστη:", CURRENT_USER_ID);
-
     const nameElem = document.getElementById('profile-name');
     const emailElem = document.getElementById('profile-email');
     const pointsElem = document.getElementById('profile-points');
 
     fetch(`/api/users/${CURRENT_USER_ID}`)
         .then(res => {
-            if (!res.ok) throw new Error("Ο χρήστης δεν βρέθηκε");
+            if (!res.ok) throw new Error('Ο χρήστης δεν βρέθηκε');
             return res.json();
         })
         .then(userData => {
@@ -380,67 +377,74 @@ function loadProfile() {
             if (pointsElem) pointsElem.innerText = userData.points;
         })
         .catch(err => {
-            console.error("Σφάλμα φόρτωσης προφίλ:", err);
-            // Fallback σε περίπτωση που πέσει ο server
-            if (nameElem) nameElem.innerText = "Άγνωστος Χρήστης";
-            if (pointsElem) pointsElem.innerText = "-";
+            console.error('Σφάλμα φόρτωσης προφίλ:', err);
+
+            if (nameElem) nameElem.innerText = 'Άγνωστος Χρήστης';
+            if (pointsElem) pointsElem.innerText = '-';
         });
 }
 
 function switchView(viewName) {
-    // 1. Κρύβουμε όλα
     document.getElementById('home-view').classList.add('hidden-view');
     document.getElementById('orders-view').classList.add('hidden-view');
     document.getElementById('profile-view').classList.add('hidden-view');
 
-    // 2. Εμφανίζουμε αυτό που θέλουμε
     document.getElementById(viewName + '-view').classList.remove('hidden-view');
 
-    // 3. Ενημερώνουμε τα κουμπιά
     document.getElementById('nav-home').classList.remove('active');
     document.getElementById('nav-orders').classList.remove('active');
     document.getElementById('nav-profile').classList.remove('active');
     document.getElementById('nav-' + viewName).classList.add('active');
 
-    if (viewName === 'home') setTimeout(() => { map.invalidateSize(); }, 100);
-    else if (viewName === 'orders') loadOrders();
-    else if (viewName === 'profile') loadProfile();
+    if (viewName === 'home') {
+        setTimeout(() => map.invalidateSize(), 100);
+    } else if (viewName === 'orders') {
+        loadOrders();
+    } else if (viewName === 'profile') {
+        loadProfile();
+    }
 }
 
-// -- Event Listeners --
-feedContainer.addEventListener('click', async (e) => {
-    if (e.target.classList.contains('btn-reserve')) {
-        e.preventDefault();
+document.addEventListener('click', async (e) => {
+    const reserveButton = e.target.closest('.btn-reserve');
 
-        const listingId = e.target.getAttribute('data-listing-id');
+    if (!reserveButton || reserveButton.disabled) return;
 
-        try {
-            const response = await fetch('/api/requests', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ listing_id: listingId, consumer_id: CURRENT_USER_ID })
-            });
+    e.preventDefault();
 
-            const data = await response.json();
+    const listingId = reserveButton.getAttribute('data-listing-id');
 
-            if (response.ok) {
-                alert("Τέλεια! " + data.message);
-                e.target.innerText = "Pending...";
-                e.target.disabled = true;
-                e.target.style.backgroundColor = "gray";
-            } else {
-                alert("Αποτυχία: " + data.error);
-            }
+    try {
+        const response = await fetch('/api/requests', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                listing_id: listingId,
+                consumer_id: CURRENT_USER_ID
+            })
+        });
 
-        } catch (error) {
-            console.error("Σφάλμα σύνδεσης:", error);
-            alert("Υπήρξε πρόβλημα με τον server.");
+        const data = await response.json();
+
+        if (response.ok) {
+            alert('Τέλεια! ' + data.message);
+            reserveButton.innerText = 'Pending...';
+            reserveButton.disabled = true;
+            reserveButton.style.backgroundColor = 'gray';
+            loadFeed();
+        } else {
+            alert('Αποτυχία: ' + data.error);
+            loadFeed();
         }
+    } catch (error) {
+        console.error('Σφάλμα σύνδεσης:', error);
+        alert('Υπήρξε πρόβλημα με τον server.');
     }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
     const stars = document.querySelectorAll('.star-rating .star');
+
     stars.forEach(star => {
         star.addEventListener('click', () => {
             currentRating = parseInt(star.getAttribute('data-value'));
@@ -451,24 +455,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.getElementById('distance-range').addEventListener('input', (e) => {
     const radius = e.target.value;
-    document.getElementById('range-value').innerText = radius;
+    document.getElementById('range-value').innerText = `${radius} km`;
     filterByDistance(radius);
 });
 
 listBtn.addEventListener('click', () => toggleView(false));
 mapBtn.addEventListener('click', () => toggleView(true));
 
-document.getElementById('btn-logout').addEventListener('click',(e) => {
-    const confirmLogout = confirm("Είσαι σίγουρος ότι θέλεις να αποσυνδεθείς;");
+document.getElementById('btn-logout').addEventListener('click', () => {
+    const confirmLogout = confirm('Είσαι σίγουρος ότι θέλεις να αποσυνδεθείς;');
 
     if (confirmLogout) {
         localStorage.removeItem('unibite_token');
         localStorage.removeItem('unibite_user_id');
+        localStorage.removeItem('unibite_is_admin');
+        localStorage.removeItem('unibite_role');
 
         window.location.href = '/';
     }
 });
 
-document.getElementById('btn-become-cook').addEventListener('click', () => { window.location.href = 'cook.html';})
+document.getElementById('btn-become-cook').addEventListener('click', () => {
+    window.location.href = 'cook.html';
+});
 
 getUserLocation();

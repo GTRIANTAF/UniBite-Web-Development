@@ -62,26 +62,52 @@ async function geocodePickupLocation(pickupLocation, pickupBuilding) {
 
 // GET all visible listings
 router.get('/', (req, res) => {
-    const userId = req.query.userId ? Number(req.query.userId) : 0;
+    const userId = Number(req.query.userId || 0);
+
+    if (req.query.userId && !isPositiveInteger(userId)) {
+        return res.status(400).json({
+            error: 'Invalid user id'
+        });
+    }
 
     refreshListingStatuses((statusErr) => {
         if (statusErr) {
-            return res.status(500).json({ error: 'Database error', details: statusErr.message });
+            return res.status(500).json({
+                error: 'Database error while refreshing listing statuses',
+                details: statusErr.message
+            });
         }
 
         const query = `
-            SELECT L.*,
-                   (SELECT COUNT(*) FROM Request R WHERE R.listing_id = L.listing_id AND R.consumer_id = ?) AS already_requested
-            FROM Listing L
-            WHERE L.status IN ('Active', 'Inactive')
-              AND L.creation_timestamp > NOW() - INTERVAL 48 HOUR
-            ORDER BY L.creation_timestamp DESC
+            SELECT
+                l.*,
+                ur.status AS user_request_status,
+                ur.delivery_status AS user_delivery_status
+            FROM Listing l
+            LEFT JOIN (
+                SELECT listing_id, MAX(request_id) AS request_id
+                FROM Request
+                WHERE consumer_id = ?
+                  AND (
+                    status = 'Pending'
+                    OR (status = 'Approved' AND delivery_status = 'Pending')
+                  )
+                GROUP BY listing_id
+            ) active_req ON active_req.listing_id = l.listing_id
+            LEFT JOIN Request ur ON ur.request_id = active_req.request_id
+            WHERE l.status IN ('Active', 'Inactive')
+              AND l.creation_timestamp > NOW() - INTERVAL 48 HOUR
+            ORDER BY l.creation_timestamp DESC
         `;
 
         db.query(query, [userId], (err, results) => {
             if (err) {
-                return res.status(500).json({ error: 'Database error', details: err.message });
+                return res.status(500).json({
+                    error: 'Database error',
+                    details: err.message
+                });
             }
+
             res.json(results);
         });
     });

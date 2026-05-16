@@ -919,4 +919,637 @@ body {
 
 }
 
-.hidden-view { display: none !important;}
+.hidden-view { 
+    display: none !important;
+}
+
+/* Cook listing form */
+
+.cook-page {
+    max-width: 980px;
+}
+
+.cook-header {
+    margin-bottom: 24px;
+}
+
+.cook-header h1 {
+    margin: 0 0 6px 0;
+    color: var(--primary-color);
+    font-size: 28px;
+}
+
+.cook-header p {
+    margin: 0;
+    color: var(--text-light);
+}
+
+.listing-form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+}
+
+.form-section h2 {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+    color: var(--text-dark);
+}
+
+.form-section label {
+    display: block;
+    margin: 14px 0 6px 0;
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 14px;
+}
+
+.form-section input,
+.form-section textarea {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    font: inherit;
+    background: #fff;
+}
+
+.form-section input:focus,
+.form-section textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.12);
+}
+
+.allergen-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.allergen-grid label {
+    margin: 0;
+    background: var(--bg-color);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-weight: 500;
+}
+
+.submit-listing-btn {
+    width: 100%;
+    border: none;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 10px;
+    padding: 15px;
+    font-weight: 800;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.submit-listing-btn:hover {
+    background: #e64a19;
+}
+
+.form-message {
+    padding: 14px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+.form-message.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.form-message.error {
+    background: #ffebee;
+    color: #c62828;
+}
+
+@media (min-width: 768px) {
+    .listing-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+    }
+
+    .form-section:nth-of-type(3),
+    .form-message,
+    .submit-listing-btn {
+        grid-column: 1 / -1;
+    }
+
+    .allergen-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+/* Provider Dashboard */
+
+.provider-dashboard {
+    margin-top: 40px;
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.dashboard-header h2 {
+    margin: 0 0 6px 0;
+    color: var(--text-dark);
+    font-size: 24px;
+}
+
+.dashboard-header p {
+    margin: 0;
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+.dashboard-refresh-btn {
+    border: none;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cook-requests-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.provider-request-card {
+    background: var(--bg-color);
+    border-radius: 12px;
+    padding: 16px;
+    border-left: 5px solid var(--accent-color);
+}
+
+.provider-request-card.approved {
+    border-left-color: var(--secondary-color);
+}
+
+.provider-request-card.completed {
+    border-left-color: var(--secondary-color);
+}
+
+.provider-request-card.rejected {
+    border-left-color: #dc3545;
+}
+
+.provider-request-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    border-bottom: 1px solid #e5e5e5;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+}
+
+.provider-request-header h3 {
+    margin: 0 0 6px 0;
+    font-size: 18px;
+    color: var(--text-dark);
+}
+
+.provider-request-header p {
+    margin: 0;
+    color: var(--text-light);
+    font-size: 13px;
+}
+
+.provider-status-badge {
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.provider-status-badge.pending {
+    background: #fff8e1;
+    color: #f57f17;
+}
+
+.provider-status-badge.approved,
+.provider-status-badge.completed {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.provider-status-badge.rejected {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.provider-request-body {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.provider-request-body p {
+    margin: 0;
+    color: var(--text-dark);
+    font-size: 14px;
+}
+
+.provider-request-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.provider-action-btn {
+    border: none;
+    border-radius: 9px;
+    padding: 9px 12px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.provider-action-btn.approve,
+.provider-action-btn.complete {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.provider-action-btn.reject,
+.provider-action-btn.no-show {
+    background: #dc3545;
+    color: white;
+}
+
+.provider-action-btn .material-icons {
+    font-size: 18px;
+}
+
+.dashboard-empty {
+    margin: 0;
+    color: var(--text-light);
+    font-weight: 600;
+}
+
+.dashboard-empty.error {
+    color: #c62828;
+}
+
+@media (max-width: 600px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dashboard-refresh-btn {
+        justify-content: center;
+    }
+
+    .provider-request-header {
+        flex-direction: column;
+    }
+
+    .provider-request-actions {
+        flex-direction: column;
+    }
+
+    .provider-action-btn {
+        justify-content: center;
+        width: 100%;
+    }
+}
+/* Admin Panel */
+
+.admin-page {
+    max-width: 1200px;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
+.admin-header h1 {
+    margin: 0 0 8px 0;
+    color: var(--primary-color);
+    font-size: 34px;
+}
+
+.admin-header p {
+    margin: 0;
+    color: var(--text-light);
+}
+
+.admin-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.admin-controls input {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 11px;
+    font: inherit;
+    background: white;
+}
+
+.admin-controls button {
+    border: none;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.admin-stat-card,
+.admin-panel-card,
+.admin-table-card {
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+}
+
+.admin-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.admin-stat-card > .material-icons {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: #ffeae3;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+}
+
+.admin-stat-card p {
+    margin: 0 0 4px 0;
+    color: var(--text-light);
+    font-weight: 700;
+}
+
+.admin-stat-card h2 {
+    margin: 0;
+    color: var(--text-dark);
+    font-size: 30px;
+}
+
+.admin-panels,
+.admin-leaderboards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.admin-panel-header h2 {
+    margin: 0 0 16px 0;
+    color: var(--text-dark);
+    font-size: 20px;
+}
+
+.admin-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.admin-mini-grid div {
+    background: var(--bg-color);
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.admin-mini-grid span {
+    display: block;
+    color: var(--primary-color);
+    font-size: 24px;
+    font-weight: 900;
+    margin-bottom: 4px;
+}
+
+.admin-mini-grid p {
+    margin: 0;
+    color: var(--text-light);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.admin-table-card table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table-card th,
+.admin-table-card td {
+    padding: 12px 8px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+    font-size: 14px;
+}
+
+.admin-table-card th {
+    color: var(--text-light);
+    font-weight: 800;
+}
+
+.admin-table-card td strong {
+    display: block;
+    color: var(--text-dark);
+}
+
+.admin-table-card td span {
+    display: block;
+    color: var(--text-light);
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+@media (min-width: 768px) {
+    .admin-stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .admin-panels,
+    .admin-leaderboards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .admin-mini-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 700px) {
+    .admin-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .admin-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .admin-controls button {
+        justify-content: center;
+    }
+}
+
+/* Cook Responsiveness Final Fixes */
+
+@media (max-width: 767px) {
+    .cook-page {
+        max-width: 100%;
+        padding: 18px;
+        padding-bottom: 100px;
+    }
+
+    .cook-header h1 {
+        font-size: 24px;
+        line-height: 1.2;
+    }
+
+    .cook-header p {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .listing-form {
+        gap: 16px;
+    }
+
+    .form-section {
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    .form-section h2 {
+        font-size: 17px;
+    }
+
+    .form-section input,
+    .form-section textarea {
+        font-size: 16px;
+        min-height: 44px;
+    }
+
+    .allergen-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .allergen-grid label {
+        min-height: 44px;
+        font-size: 14px;
+    }
+
+    .submit-listing-btn {
+        min-height: 50px;
+        font-size: 15px;
+    }
+
+    .provider-dashboard {
+        margin-top: 26px;
+        padding: 16px;
+        border-radius: 14px;
+    }
+
+    .dashboard-header h2 {
+        font-size: 22px;
+    }
+
+    .dashboard-header p {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .provider-request-card {
+        padding: 14px;
+    }
+
+    .provider-request-header h3 {
+        font-size: 17px;
+        line-height: 1.25;
+    }
+
+    .provider-status-badge {
+        width: fit-content;
+    }
+
+    .provider-request-body p {
+        font-size: 14px;
+        line-height: 1.45;
+    }
+
+    .provider-action-btn {
+        min-height: 46px;
+        font-size: 14px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .cook-page {
+        max-width: 1180px;
+    }
+
+    .provider-dashboard {
+        padding: 28px;
+    }
+}
+
+
+
