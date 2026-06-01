@@ -32,33 +32,7 @@ function refreshListingStatuses(callback) {
     db.query(query, callback);
 }
 
-async function geocodePickupLocation(pickupLocation, pickupBuilding) {
-    let latitude = 38.2462;
-    let longitude = 21.7351;
 
-    try {
-        const addressText = `${pickupLocation}, ${pickupBuilding}, Πάτρα, Ελλάδα`;
-        const addressQuery = encodeURIComponent(addressText);
-        const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${addressQuery}&limit=1`;
-
-        const geoResponse = await fetch(geocodeUrl, {
-            headers: {
-                'User-Agent': 'UniBite_Student_Project_Upatras'
-            }
-        });
-
-        const geoData = await geoResponse.json();
-
-        if (geoData && geoData.length > 0) {
-            latitude = parseFloat(geoData[0].lat);
-            longitude = parseFloat(geoData[0].lon);
-        }
-    } catch (error) {
-        console.error('Nominatim geocoding error:', error.message);
-    }
-
-    return { latitude, longitude };
-}
 
 // GET all visible listings
 router.get('/', (req, res) => {
@@ -260,6 +234,8 @@ router.post('/', async (req, res) => {
         pickup_building,
         pickup_details,
         pickup_time,
+        latitude,
+        longitude,
         total_portions
     } = req.body;
 
@@ -270,7 +246,9 @@ router.post('/', async (req, res) => {
         !pickup_location ||
         !pickup_building ||
         !pickup_time ||
-        !total_portions
+        !total_portions ||
+        latitude === undefined ||
+        longitude === undefined
     ) {
         return res.status(400).json({
             error: 'Missing required fields'
@@ -292,10 +270,12 @@ router.post('/', async (req, res) => {
         });
     }
 
-    const coordinates = await geocodePickupLocation(
-        pickup_location.trim(),
-        pickup_building.trim()
-    );
+    const parsedLat = parseFloat(latitude);
+    const parsedLng = parseFloat(longitude);
+
+    if (isNaN(parsedLat) || isNaN(parsedLng)) {
+        return res.status(400).json({ error: 'Valid latitude and longitude are required' });
+    }
 
     const checkCookQuery = `
         SELECT user_id
@@ -327,6 +307,7 @@ router.post('/', async (req, res) => {
                 allergens,
                 pickup_location,
                 pickup_building,
+                pickup_zip,
                 pickup_details,
                 pickup_time,
                 latitude,
@@ -350,8 +331,8 @@ router.post('/', async (req, res) => {
                 pickup_building.trim(),
                 normalizeOptionalText(pickup_details),
                 pickup_time,
-                coordinates.latitude,
-                coordinates.longitude,
+                parsedLat,
+                parsedLng,
                 portions,
                 portions
             ],
@@ -365,8 +346,7 @@ router.post('/', async (req, res) => {
 
                 res.status(201).json({
                     message: 'Listing created successfully',
-                    listingId: result.insertId,
-                    coordinates
+                    listingId: result.insertId
                 });
             }
         );
@@ -393,6 +373,8 @@ router.put('/:id', async (req, res) => {
         pickup_building,
         pickup_details,
         pickup_time,
+        latitude,
+        longitude,
         total_portions,
         available_portions,
         status
@@ -405,7 +387,9 @@ router.put('/:id', async (req, res) => {
         !pickup_location ||
         !pickup_building ||
         !pickup_time ||
-        !total_portions
+        !total_portions ||
+        latitude === undefined ||
+        longitude === undefined
     ) {
         return res.status(400).json({
             error: 'Missing required fields'
@@ -449,10 +433,12 @@ router.put('/:id', async (req, res) => {
         });
     }
 
-    const coordinates = await geocodePickupLocation(
-        pickup_location.trim(),
-        pickup_building.trim()
-    );
+    const parsedLat = parseFloat(latitude);
+    const parsedLng = parseFloat(longitude);
+
+    if (isNaN(parsedLat) || isNaN(parsedLng)) {
+        return res.status(400).json({ error: 'Valid latitude and longitude are required' });
+    }
 
     const query = `
         UPDATE Listing
@@ -486,8 +472,8 @@ router.put('/:id', async (req, res) => {
             pickup_building.trim(),
             normalizeOptionalText(pickup_details),
             pickup_time,
-            coordinates.latitude,
-            coordinates.longitude,
+            parsedLat,
+            parsedLng,
             portions,
             available,
             listingStatus,
@@ -509,8 +495,7 @@ router.put('/:id', async (req, res) => {
             }
 
             res.json({
-                message: 'Listing updated successfully',
-                coordinates
+                message: 'Listing updated successfully'
             });
         }
     );

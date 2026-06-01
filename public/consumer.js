@@ -75,12 +75,17 @@ function getUserLocation() {
 
             if (userMarker) map.removeLayer(userMarker);
 
-            userMarker = L.circle([userLocation.lat, userLocation.lng], {
-                radius: 200,
-                color: '#2ecc71',
-                fillColor: '#2ecc71',
-                fillOpacity: 0.5
-            }).addTo(map).bindPopup('You are here!');
+            const userIcon = L.divIcon({
+                html: '<div class="pulsing-dot"></div>',
+                className: '',
+                iconSize: [16, 16],
+                iconAnchor: [8, 8]
+            });
+
+            userMarker = L.marker([userLocation.lat, userLocation.lng], {
+                icon: userIcon,
+                zIndexOffset: 1000
+            }).addTo(map).bindPopup('Είσαι εδώ!');
 
             loadFeed();
         },
@@ -242,7 +247,7 @@ function loadOrders() {
             console.log('Δεδομένα Παραγγελιών:', orders);
 
             if (!orders || orders.length === 0) {
-                ordersContainer.innerHTML = '<h3>Δεν έχεις παραγγελίες ακόμα.</h3>';
+                ordersContainer.innerHTML = '<p>Δεν έχεις παραγγελίες ακόμα.</p>';
                 return;
             }
 
@@ -461,6 +466,11 @@ document.getElementById('distance-range').addEventListener('input', (e) => {
 
 listBtn.addEventListener('click', () => toggleView(false));
 mapBtn.addEventListener('click', () => toggleView(true));
+
+const refreshOrdersBtn = document.getElementById('refresh-orders-btn');
+if (refreshOrdersBtn) {
+    refreshOrdersBtn.addEventListener('click', loadOrders);
+}
 
 document.getElementById('btn-logout').addEventListener('click', () => {
     const confirmLogout = confirm('Είσαι σίγουρος ότι θέλεις να αποσυνδεθείς;');
