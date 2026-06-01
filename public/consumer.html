@@ -12,6 +12,10 @@
 </head>
 <body>
 
+<header class="mobile-top-bar">
+    <div class="logo">UniBite</div>
+</header>
+
 <nav class="navigation">
     <div class="logo">UniBite</div>
 
@@ -25,9 +29,6 @@
 <main class="main-content">
 
     <section id="home-view">
-        <header class="top-header">
-            <h2>UniBite</h2>
-        </header>
 
         <div class="view-toggle">
             <button id="list-view-btn" class="toggle-btn active"><span class="material-icons">view_list</span> List</button>
@@ -47,10 +48,18 @@
         </div>
     </section>
 
-    <section id="orders-view" class="hidden-view">
-        <header class="top-header" style="margin-bottom: 20px;">
-            <h2>Orders</h2>
-        </header>
+    <section id="orders-view" class="hidden-view provider-dashboard">
+        <div class="dashboard-header">
+            <div>
+                <h2>Οι Παραγγελίες Μου</h2>
+                <p>Δες την κατάσταση των κρατήσεών σου και αξιολόγησε γεύματα.</p>
+            </div>
+
+            <button type="button" id="refresh-orders-btn" class="dashboard-refresh-btn">
+                <span class="material-icons">refresh</span>
+                Ανανέωση
+            </button>
+        </div>
 
         <div class="orders-list" id="orders-container">
         </div>

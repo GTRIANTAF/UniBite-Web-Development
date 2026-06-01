@@ -9,6 +9,88 @@ if (!CURRENT_COOK_ID) {
     window.location.href = 'login.html';
 }
 
+//Map Logic
+let map;
+let marker;
+const btnOpenMap = document.getElementById('btn-open-map');
+const mapModal = document.getElementById('map-modal');
+const closeMapModal = document.getElementById('close-map-modal');
+const btnConfirmLocation = document.getElementById('btn-confirm-location');
+const latitudeInput = document.getElementById('latitude');
+const longitudeInput = document.getElementById('longitude');
+const mapStatusText = document.getElementById('map-status-text');
+
+function initMap() {
+    if (map) {
+        map.invalidateSize();
+        return;
+    }
+    
+    map = L.map('location-picker-map').setView([38.2462, 21.7351], 13);
+    
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    //Get user location for the cook map
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            map.setView([lat, lng], 14);
+
+            const userIcon = L.divIcon({
+                html: '<div class="pulsing-dot"></div>',
+                className: '',
+                iconSize: [16, 16],
+                iconAnchor: [8, 8]
+            });
+
+            L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 })
+             .addTo(map)
+             .bindPopup('Είσαι εδώ!');
+        }, () => {
+            console.log("Geolocation denied or failed.");
+        });
+    }
+
+    map.on('click', function(e) {
+        if (marker) {
+            map.removeLayer(marker);
+        }
+        marker = L.marker(e.latlng).addTo(map);
+        latitudeInput.value = e.latlng.lat;
+        longitudeInput.value = e.latlng.lng;
+    });
+}
+
+if (btnOpenMap) {
+    btnOpenMap.addEventListener('click', () => {
+        mapModal.style.display = 'flex';
+        setTimeout(() => {
+            initMap();
+        }, 100);
+    });
+}
+
+if (closeMapModal) {
+    closeMapModal.addEventListener('click', () => {
+        mapModal.style.display = 'none';
+    });
+}
+
+if (btnConfirmLocation) {
+    btnConfirmLocation.addEventListener('click', () => {
+        if (latitudeInput.value && longitudeInput.value) {
+            mapStatusText.textContent = `📍 Επιλέχθηκε: ${parseFloat(latitudeInput.value).toFixed(4)}, ${parseFloat(longitudeInput.value).toFixed(4)}`;
+            mapStatusText.style.color = 'green';
+            mapModal.style.display = 'none';
+        } else {
+            alert('Παρακαλώ κάνε κλικ στον χάρτη για να επιλέξεις σημείο.');
+        }
+    });
+}
+
 function showMessage(text, type) {
     formMessage.textContent = text;
     formMessage.className = `form-message ${type}`;
@@ -190,6 +272,14 @@ async function updateRequestStatus(requestId, action) {
 listingForm.addEventListener('submit', async (event) => {
     event.preventDefault();
 
+    const lat = document.getElementById('latitude').value;
+    const lng = document.getElementById('longitude').value;
+
+    if (!lat || !lng) {
+        showMessage('Παρακαλώ επίλεξε τοποθεσία στον χάρτη.', 'error');
+        return;
+    }
+
     const listingData = {
         cook_id: Number(CURRENT_COOK_ID),
         title: document.getElementById('title').value.trim(),
@@ -200,6 +290,8 @@ listingForm.addEventListener('submit', async (event) => {
         pickup_building: document.getElementById('pickup_building').value.trim(),
         pickup_details: document.getElementById('pickup_details').value.trim(),
         pickup_time: document.getElementById('pickup_time').value,
+        latitude: parseFloat(lat),
+        longitude: parseFloat(lng),
         total_portions: Number(document.getElementById('total_portions').value)
     };
 
@@ -245,4 +337,52 @@ if (refreshRequestsBtn) {
     refreshRequestsBtn.addEventListener('click', loadCookRequests);
 }
 
-loadCookRequests();
+// --- Navigation & Profile Logic ---
+function switchView(viewName) {
+    document.getElementById('kitchen-view').classList.add('hidden-view');
+    document.getElementById('requests-view').classList.add('hidden-view');
+    document.getElementById('profile-view').classList.add('hidden-view');
+
+    document.getElementById('nav-kitchen').classList.remove('active');
+    document.getElementById('nav-requests').classList.remove('active');
+    document.getElementById('nav-profile').classList.remove('active');
+
+    if (viewName === 'kitchen') {
+        document.getElementById('kitchen-view').classList.remove('hidden-view');
+        document.getElementById('nav-kitchen').classList.add('active');
+    } else if (viewName === 'requests') {
+        document.getElementById('requests-view').classList.remove('hidden-view');
+        document.getElementById('nav-requests').classList.add('active');
+        loadCookRequests();
+    } else if (viewName === 'profile') {
+        document.getElementById('profile-view').classList.remove('hidden-view');
+        document.getElementById('nav-profile').classList.add('active');
+        loadProfileData();
+    }
+}
+
+async function loadProfileData() {
+    try {
+        const response = await fetch(`/api/users/${CURRENT_COOK_ID}`);
+        if (!response.ok) throw new Error('Failed to load profile');
+        const user = await response.json();
+
+        document.getElementById('profile-name').textContent = user.username;
+        document.getElementById('profile-email').textContent = user.email;
+        document.getElementById('profile-points').textContent = user.points;
+    } catch (err) {
+        console.error(err);
+        document.getElementById('profile-name').textContent = 'Σφάλμα φόρτωσης';
+    }
+}
+
+document.getElementById('btn-become-consumer').addEventListener('click', () => {
+    window.location.href = 'consumer.html';
+});
+
+document.getElementById('btn-logout').addEventListener('click', () => {
+    localStorage.removeItem('unibite_token');
+    localStorage.removeItem('unibite_user_id');
+    localStorage.removeItem('unibite_is_admin');
+    window.location.href = 'start.html';
+});

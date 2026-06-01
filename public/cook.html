@@ -7,37 +7,29 @@
 
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
+
+<header class="mobile-top-bar">
+    <div class="logo">UniBite</div>
+</header>
 
 <nav class="navigation">
     <div class="logo">UniBite</div>
 
     <ul class="nav-links">
-        <li>
-            <a href="consumer.html">
-                <span class="material-icons">home</span>
-                <span class="nav-text">Feed</span>
-            </a>
-        </li>
-        <li>
-            <a href="cook.html" class="active">
-                <span class="material-icons">soup_kitchen</span>
-                <span class="nav-text">Kitchen</span>
-            </a>
-        </li>
-        <li>
-            <a href="start.html">
-                <span class="material-icons">logout</span>
-                <span class="nav-text">Exit</span>
-            </a>
-        </li>
+        <li><a href="#" id="nav-kitchen" class="active" onclick="switchView('kitchen')"><span class="material-icons">soup_kitchen</span> <span class="nav-text">Kitchen</span></a></li>
+        <li><a href="#" id="nav-requests" onclick="switchView('requests')"><span class="material-icons">receipt_long</span> <span class="nav-text">Requests</span></a></li>
+        <li><a href="#" id="nav-profile" onclick="switchView('profile')"><span class="material-icons">person</span> <span class="nav-text">Profile</span></a></li>
     </ul>
 </nav>
 
 <main class="main-content cook-page">
 
-    <header class="cook-header">
+    <section id="kitchen-view">
+        <header class="cook-header">
         <div>
             <h1>Νέα Αγγελία Φαγητού</h1>
             <p>Καταχώρησε διαθέσιμες μερίδες και στοιχεία παραλαβής.</p>
@@ -66,7 +58,16 @@
             <h2>Στοιχεία Παραλαβής</h2>
 
             <label for="pickup_location">Ακριβές σημείο</label>
-            <input type="text" id="pickup_location" placeholder="π.χ. Πανεπιστήμιο Πατρών" required>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="pickup_location" placeholder="π.χ. Πανεπιστήμιο Πατρών" required style="flex: 1; margin: 0;">
+                <button type="button" id="btn-open-map" style="margin: 0; padding: 0; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: var(--secondary-color); color: white; border: none; border-radius: 8px; cursor: pointer; flex-shrink: 0;" title="Επιλογή στον χάρτη">
+                    <span class="material-icons">place</span>
+                </button>
+            </div>
+            <p id="map-status-text" style="font-size: 0.85em; color: #666; margin-top: 5px;">📍 Δεν έχει επιλεγεί τοποθεσία στον χάρτη</p>
+            
+            <input type="hidden" id="latitude">
+            <input type="hidden" id="longitude">
 
             <label for="pickup_building">Κτίριο</label>
             <input type="text" id="pickup_building" placeholder="π.χ. Βιβλιοθήκη" required>
@@ -108,7 +109,9 @@
 
     </form>
 
-    <section class="provider-dashboard">
+    </section>
+
+    <section id="requests-view" class="hidden-view provider-dashboard">
         <div class="dashboard-header">
             <div>
                 <h2>Αιτήματα Παραλαβής</h2>
@@ -126,7 +129,55 @@
         </div>
     </section>
 
+    <section id="profile-view" class="hidden-view">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <span class="material-icons">person</span>
+            </div>
+            <h2 id="profile-name">Φόρτωση...</h2>
+            <p id="profile-email"></p>
+        </div>
+
+        <div class="points-card">
+            <div class="points-info">
+                <h3>Διαθέσιμοι Πόντοι</h3>
+                <p>Μάζεψε πόντους προσφέροντας μερίδες για να μπορείς να παραγγείλεις!</p>
+            </div>
+            <div class="points-badge">
+                <span id="profile-points">-</span>
+                <span class="material-icons">stars</span>
+            </div>
+        </div>
+
+        <div class="profile-actions">
+            <div class="switch-role-box">
+                <p>Θέλεις να βρεις φαγητό αντί να μαγειρέψεις;</p>
+                <button class="action-btn switch-btn" id="btn-become-consumer">
+                    <span class="material-icons">fastfood</span>
+                    Γίνε Καταναλωτής
+                </button>
+            </div>
+
+            <button class="action-btn logout-btn" id="btn-logout">
+                <span class="material-icons">logout</span>
+                Αποσύνδεση
+            </button>
+        </div>
+    </section>
+
 </main>
+
+<div id="map-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;">
+    <div style="background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 600px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2 style="margin: 0;">Επιλογή Τοποθεσίας</h2>
+            <span class="material-icons" id="close-map-modal" style="cursor: pointer;">close</span>
+        </div>
+        <p style="margin-top: 0; margin-bottom: 15px; color: #666;">Κάνε κλικ στον χάρτη για να ορίσεις το ακριβές σημείο παραλαβής.</p>
+        <div id="location-picker-map" style="height: 400px; width: 100%; border-radius: 8px; margin-bottom: 15px;"></div>
+        <button type="button" id="btn-confirm-location" style="width: 100%; padding: 12px; background: var(--secondary-color); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Επιβεβαίωση</button>
+    </div>
+</div>
 
 <script src="cook.js"></script>
 </body>

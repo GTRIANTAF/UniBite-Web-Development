@@ -21,6 +21,27 @@ body {
 
 /* Mobile first layout */
 
+.mobile-top-bar {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000;
+    padding: 12px 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+.mobile-top-bar .logo {
+    display: block;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--primary-color);
+    margin: 0;
+}
+
 /* Navigation CSS */
 .navigation {
     position: fixed;
@@ -705,6 +726,36 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* User Location Ping */
+.pulsing-dot {
+    width: 16px;
+    height: 16px;
+    background-color: #2196F3; /* Blue */
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 0 0 3px white, 0 0 8px rgba(0,0,0,0.4);
+}
+
+.pulsing-dot::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background-color: #2196F3;
+    border-radius: 50%;
+    z-index: -1;
+    animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes ping {
+    75%, 100% {
+        transform: scale(3);
+        opacity: 0;
+    }
+}
+
 /* --- DESKTOP RESIZING --- */
 
 @media (min-width: 768px) {
@@ -743,6 +794,8 @@ body {
     .nav-spacer { display: none; } /* Κρύβουμε το κενό του κινητού */
 
     .top-header h2 { display: none; }
+
+    .mobile-top-bar { display: none; }
 
     .nav-links {
         flex-direction: column;
