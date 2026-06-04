@@ -18,7 +18,7 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
 const listBtn = document.getElementById('list-view-btn');
 const mapBtn = document.getElementById('map-view-btn');
 const mapDiv = document.getElementById('map');
-const feedDiv = document.getElementById('dynamic-feed');
+const sortContainer = document.getElementById('sort-container');
 
 let currentOrderIdToReview = null;
 let currentRating = 0;
@@ -26,7 +26,8 @@ let currentRating = 0;
 function toggleView(showMap) {
     if (showMap) {
         mapDiv.classList.remove('hidden-view');
-        feedDiv.classList.add('hidden-view');
+        feedContainer.classList.add('hidden-view');
+        if (sortContainer) sortContainer.classList.add('hidden-view');
 
         mapBtn.classList.add('active');
         listBtn.classList.remove('active');
@@ -37,7 +38,8 @@ function toggleView(showMap) {
         }, 100);
     } else {
         mapDiv.classList.add('hidden-view');
-        feedDiv.classList.remove('hidden-view');
+        feedContainer.classList.remove('hidden-view');
+        if (sortContainer) sortContainer.classList.remove('hidden-view');
 
         listBtn.classList.add('active');
         mapBtn.classList.remove('active');
@@ -61,6 +63,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 function getUserLocation() {
     if (!navigator.geolocation) {
         loadFeed();
+        loadOrders();
         return;
     }
 
@@ -139,11 +142,14 @@ function hasActiveUserRequest(listing) {
 }
 
 function loadFeed() {
-    feedContainer.innerHTML = '';
-
     fetch(`/api/listings?userId=${CURRENT_USER_ID}`)
         .then(res => res.json())
         .then(data => {
+            const newDataStr = JSON.stringify(data);
+            if (window.currentFeedDataStr === newDataStr) return;
+            window.currentFeedDataStr = newDataStr;
+            
+            feedContainer.innerHTML = '';
             console.log(data);
 
             if (!data || data.length === 0) {
@@ -170,6 +176,11 @@ function loadFeed() {
                 const card = document.createElement('article');
                 card.className = `food-card ${isExhausted ? 'noAvailability' : ''}`;
                 card.dataset.distance = dist;
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('.btn-reserve')) return;
+                    openFoodDetailsModal(listing);
+                });
 
                 card.innerHTML = `
                     <div class="card-img-container">
@@ -185,7 +196,10 @@ function loadFeed() {
                                 <span class="material-icons">location_on</span>${listing.pickup_location}
                             </p>
                         </div>
-                        <p>${listing.description}</p>
+                        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; margin-top: 4px;">
+                            <p style="margin: 0;">${listing.description}</p>
+                            ${listing.allergens ? `<p class="allergens-text" style="color: #d9534f; font-size: 0.9em; margin: 0;"><strong>Αλλεργιογόνα:</strong> ${listing.allergens}</p>` : ''}
+                        </div>
                         <div class="info-bottom">
                             <span>Pickup: ${listing.pickup_time ? formatPickupTime(listing.pickup_time) : 'Άμεσα'}</span>
                             <button class="btn-reserve" data-listing-id="${id}" ${isDisabled ? 'disabled' : ''}>
@@ -222,19 +236,6 @@ function loadFeed() {
         });
 }
 
-function formatPickupTime(dateString) {
-    const date = new Date(dateString);
-
-    if (Number.isNaN(date.getTime())) {
-        return 'Άγνωστη ώρα';
-    }
-
-    return date.toLocaleString('el-GR', {
-        dateStyle: 'short',
-        timeStyle: 'short'
-    });
-}
-
 function loadOrders() {
     const ordersContainer = document.getElementById('orders-container');
     if (!ordersContainer) return;
@@ -244,14 +245,12 @@ function loadOrders() {
     fetch(`/api/orders?userId=${CURRENT_USER_ID}`)
         .then(res => res.json())
         .then(orders => {
-            console.log('Δεδομένα Παραγγελιών:', orders);
+            ordersContainer.innerHTML = '';
 
             if (!orders || orders.length === 0) {
                 ordersContainer.innerHTML = '<p>Δεν έχεις παραγγελίες ακόμα.</p>';
                 return;
             }
-
-            ordersContainer.innerHTML = '';
 
             orders.forEach(order => {
                 const statusClass = order.statusClass || 'pending';
@@ -314,6 +313,33 @@ function closeReviewModal() {
 
     currentOrderIdToReview = null;
     currentRating = 0;
+}
+
+function openFoodDetailsModal(listing) {
+    document.getElementById('food-modal-img-container').src = listing.photo_url || 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=500';
+    document.getElementById('food-modal-title').innerText = listing.title || '';
+    document.getElementById('food-modal-description').innerText = listing.description || '';
+    document.getElementById('food-modal-location').innerText = listing.pickup_location || 'Άγνωστο';
+    document.getElementById('food-modal-building').innerText = listing.pickup_building || 'Άγνωστο';
+    document.getElementById('food-modal-details').innerText = listing.pickup_details || 'Καμία οδηγία';
+    document.getElementById('food-modal-time').innerText = listing.pickup_time ? formatPickupTime(listing.pickup_time) : 'Άμεσα';
+    
+    const portions = listing.available_portions ?? 0;
+    document.getElementById('food-modal-portions').innerText = portions;
+
+    const allergensElem = document.getElementById('food-modal-allergens');
+    if (listing.allergens) {
+        allergensElem.innerHTML = `<strong>Αλλεργιογόνα:</strong> ${listing.allergens}`;
+        allergensElem.style.display = 'block';
+    } else {
+        allergensElem.style.display = 'none';
+    }
+
+    document.getElementById('food-details-modal').classList.remove('hidden-view');
+}
+
+function closeFoodDetailsModal() {
+    document.getElementById('food-details-modal').classList.add('hidden-view');
 }
 
 function updateStars(rating) {
@@ -490,3 +516,12 @@ document.getElementById('btn-become-cook').addEventListener('click', () => {
 });
 
 getUserLocation();
+
+// Global smart polling
+setInterval(() => {
+    // Only poll the listing feed dynamically
+    const homeView = document.getElementById('home-view');
+    if (homeView && !homeView.classList.contains('hidden-view')) {
+        loadFeed();
+    }
+}, 10000);
