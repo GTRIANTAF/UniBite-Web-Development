@@ -19,6 +19,7 @@ const listBtn = document.getElementById('list-view-btn');
 const mapBtn = document.getElementById('map-view-btn');
 const mapDiv = document.getElementById('map');
 const feedDiv = document.getElementById('dynamic-feed');
+const sortContainer = document.getElementById('sort-container');
 
 let currentOrderIdToReview = null;
 let currentRating = 0;
@@ -27,6 +28,7 @@ function toggleView(showMap) {
     if (showMap) {
         mapDiv.classList.remove('hidden-view');
         feedDiv.classList.add('hidden-view');
+        if (sortContainer) sortContainer.classList.add('hidden-view');
 
         mapBtn.classList.add('active');
         listBtn.classList.remove('active');
@@ -38,6 +40,7 @@ function toggleView(showMap) {
     } else {
         mapDiv.classList.add('hidden-view');
         feedDiv.classList.remove('hidden-view');
+        if (sortContainer) sortContainer.classList.remove('hidden-view');
 
         listBtn.classList.add('active');
         mapBtn.classList.remove('active');
@@ -154,19 +157,6 @@ function loadFeed() {
 
             markersLayer.clearLayers();
 
-            // Υπολογισμός απόστασης για κάθε αγγελία και ταξινόμηση
-            data.forEach(listing => {
-                const lat = parseFloat(listing.latitude) || 38.2466;
-                const lng = parseFloat(listing.longitude) || 21.7346;
-                listing.distance = calculateDistance(userLocation.lat, userLocation.lng, lat, lng);
-            });
-
-            // Ταξινόμηση ανάλογα με την επιλογή του χρήστη
-            const sortOrder = document.getElementById('sort-select')?.value || 'closest';
-            data.sort((a, b) => {
-                return sortOrder === 'closest' ? a.distance - b.distance : b.distance - a.distance;
-            });
-
             data.forEach(listing => {
                 const id = listing.listing_id;
                 const portions = listing.available_portions ?? 0;
@@ -177,11 +167,17 @@ function loadFeed() {
 
                 const lat = parseFloat(listing.latitude) || 38.2466;
                 const lng = parseFloat(listing.longitude) || 21.7346;
-                const dist = listing.distance;
+
+                const dist = calculateDistance(userLocation.lat, userLocation.lng, lat, lng);
 
                 const card = document.createElement('article');
                 card.className = `food-card ${isExhausted ? 'noAvailability' : ''}`;
                 card.dataset.distance = dist;
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('.btn-reserve')) return;
+                    openFoodDetailsModal(listing);
+                });
 
                 card.innerHTML = `
                     <div class="card-img-container">
@@ -197,7 +193,10 @@ function loadFeed() {
                                 <span class="material-icons">location_on</span>${listing.pickup_location}
                             </p>
                         </div>
-                        <p>${listing.description}</p>
+                        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; margin-top: 4px;">
+                            <p style="margin: 0;">${listing.description}</p>
+                            ${listing.allergens ? `<p class="allergens-text" style="color: #d9534f; font-size: 0.9em; margin: 0;"><strong>Αλλεργιογόνα:</strong> ${listing.allergens}</p>` : ''}
+                        </div>
                         <div class="info-bottom">
                             <span>Pickup: ${listing.pickup_time ? formatPickupTime(listing.pickup_time) : 'Άμεσα'}</span>
                             <button class="btn-reserve" data-listing-id="${id}" ${isDisabled ? 'disabled' : ''}>
@@ -326,6 +325,33 @@ function closeReviewModal() {
 
     currentOrderIdToReview = null;
     currentRating = 0;
+}
+
+function openFoodDetailsModal(listing) {
+    document.getElementById('food-modal-img-container').src = listing.photo_url || 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=500';
+    document.getElementById('food-modal-title').innerText = listing.title || '';
+    document.getElementById('food-modal-description').innerText = listing.description || '';
+    document.getElementById('food-modal-location').innerText = listing.pickup_location || 'Άγνωστο';
+    document.getElementById('food-modal-building').innerText = listing.pickup_building || 'Άγνωστο';
+    document.getElementById('food-modal-details').innerText = listing.pickup_details || 'Καμία οδηγία';
+    document.getElementById('food-modal-time').innerText = listing.pickup_time ? formatPickupTime(listing.pickup_time) : 'Άμεσα';
+    
+    const portions = listing.available_portions ?? 0;
+    document.getElementById('food-modal-portions').innerText = portions;
+
+    const allergensElem = document.getElementById('food-modal-allergens');
+    if (listing.allergens) {
+        allergensElem.innerHTML = `<strong>Αλλεργιογόνα:</strong> ${listing.allergens}`;
+        allergensElem.style.display = 'block';
+    } else {
+        allergensElem.style.display = 'none';
+    }
+
+    document.getElementById('food-details-modal').classList.remove('hidden-view');
+}
+
+function closeFoodDetailsModal() {
+    document.getElementById('food-details-modal').classList.add('hidden-view');
 }
 
 function updateStars(rating) {
@@ -474,10 +500,6 @@ document.getElementById('distance-range').addEventListener('input', (e) => {
     const radius = e.target.value;
     document.getElementById('range-value').innerText = `${radius} km`;
     filterByDistance(radius);
-});
-
-document.getElementById('sort-select')?.addEventListener('change', () => {
-    loadFeed();
 });
 
 listBtn.addEventListener('click', () => toggleView(false));

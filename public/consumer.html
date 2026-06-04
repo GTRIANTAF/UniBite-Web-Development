@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UniBite - Explore</title>
 
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=2.2">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -42,14 +42,17 @@
             </div>
             <label for="distance-range"></label><input type="range" id="distance-range" min="1" max="20" value="5" class="modern-slider">
             
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 18px 0;">
-            <div class="range-header" style="margin-bottom: 8px;">
-                <span>Ταξινόμηση</span>
+            <div id="sort-container">
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 18px 0;">
+                <div class="range-header" style="margin-bottom: 8px;">
+                    <span>Ταξινόμηση</span>
+                    <label for="sort-select" style="display:none;"></label>
+                    <select id="sort-select" class="modern-select">
+                        <option value="closest">Κοντινότερα πρώτα</option>
+                        <option value="farthest">Μακρινότερα πρώτα</option>
+                    </select>
+                </div>
             </div>
-            <label for="sort-select"></label><select id="sort-select" class="modern-select">
-                <option value="closest">Κοντινότερα πρώτα</option>
-                <option value="farthest">Μακρινότερα πρώτα</option>
-            </select>
         </div>
 
         <div id="map" class="hidden-view"></div>
@@ -72,8 +75,10 @@
 
         <div class="orders-list" id="orders-container">
         </div>
+    </section>
 
-        <div id="review-modal" class="modal-overlay hidden-view">
+    <!-- Global Modals -->
+    <div id="review-modal" class="modal-overlay hidden-view">
             <div class="modal-content">
                 <h3 id="review-modal-title">Αξιολόγηση Παραγγελίας</h3>
                 <p>Πώς σου φάνηκε το φαγητό;</p>
@@ -92,7 +97,49 @@
                 </div>
             </div>
         </div>
-    </section>
+
+        <div id="food-details-modal" class="modal-overlay hidden-view">
+        <div class="modal-content food-modal-content">
+            <button class="food-modal-floating-close" onclick="closeFoodDetailsModal()">
+                <span class="material-icons">close</span>
+            </button>
+            <img id="food-modal-img-container" class="food-modal-img" src="" alt="Food Picture" />
+            <div class="food-modal-body">
+                <h2 id="food-modal-title" class="food-modal-title"></h2>
+                <p id="food-modal-description" class="food-modal-description"></p>
+                
+                <div class="food-modal-info-grid">
+                    <div class="info-row">
+                        <span class="material-icons">location_on</span>
+                        <span class="info-label">Τοποθεσία:</span>
+                        <span class="info-value" id="food-modal-location"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="material-icons">business</span>
+                        <span class="info-label">Κτίριο:</span>
+                        <span class="info-value" id="food-modal-building"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="material-icons">info</span>
+                        <span class="info-label">Οδηγίες:</span>
+                        <span class="info-value" id="food-modal-details"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="material-icons">schedule</span>
+                        <span class="info-label">Ώρα:</span>
+                        <span class="info-value" id="food-modal-time"></span>
+                    </div>
+                    <div class="info-row" style="margin-bottom: 0;">
+                        <span class="material-icons">restaurant</span>
+                        <span class="info-label">Μερίδες:</span>
+                        <span class="info-value" id="food-modal-portions"></span>
+                    </div>
+                </div>
+                
+                <p id="food-modal-allergens" class="food-modal-allergens"></p>
+            </div>
+        </div>
+    </div>
 
     <section id="profile-view" class="hidden-view">
         <div class="profile-header">

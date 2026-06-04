@@ -307,7 +307,6 @@ router.post('/', async (req, res) => {
                 allergens,
                 pickup_location,
                 pickup_building,
-                pickup_zip,
                 pickup_details,
                 pickup_time,
                 latitude,
