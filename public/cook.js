@@ -25,9 +25,9 @@ function initMap() {
         map.invalidateSize();
         return;
     }
-    
+
     map = L.map('location-picker-map').setView([38.2462, 21.7351], 13);
-    
+
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
@@ -47,8 +47,8 @@ function initMap() {
             });
 
             L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 })
-             .addTo(map)
-             .bindPopup('Είσαι εδώ!');
+                .addTo(map)
+                .bindPopup('Είσαι εδώ!');
         }, () => {
             console.log("Geolocation denied or failed.");
         });
@@ -102,18 +102,7 @@ function getSelectedAllergens() {
     return Array.from(checkedAllergens).map(item => item.value).join(', ');
 }
 
-function formatDate(dateString) {
-    const date = new Date(dateString);
 
-    if (Number.isNaN(date.getTime())) {
-        return 'Άγνωστη ώρα';
-    }
-
-    return date.toLocaleString('el-GR', {
-        dateStyle: 'short',
-        timeStyle: 'short'
-    });
-}
 
 function getRequestStatusText(request) {
     if (request.status === 'Pending') return 'Σε αναμονή';
@@ -381,8 +370,16 @@ document.getElementById('btn-become-consumer').addEventListener('click', () => {
 });
 
 document.getElementById('btn-logout').addEventListener('click', () => {
-    localStorage.removeItem('unibite_token');
-    localStorage.removeItem('unibite_user_id');
-    localStorage.removeItem('unibite_is_admin');
-    window.location.href = 'start.html';
+    const confirmLogout = confirm('Είσαι σίγουρος ότι θέλεις να αποσυνδεθείς;');
+
+    if (confirmLogout) {
+        localStorage.removeItem('unibite_token');
+        localStorage.removeItem('unibite_user_id');
+        localStorage.removeItem('unibite_is_admin');
+        localStorage.removeItem('unibite_role');
+
+        window.location.href = '/';
+    }
 });
+
+loadCookRequests();

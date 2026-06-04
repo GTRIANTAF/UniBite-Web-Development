@@ -18,7 +18,6 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
 const listBtn = document.getElementById('list-view-btn');
 const mapBtn = document.getElementById('map-view-btn');
 const mapDiv = document.getElementById('map');
-const feedDiv = document.getElementById('dynamic-feed');
 const sortContainer = document.getElementById('sort-container');
 
 let currentOrderIdToReview = null;
@@ -27,7 +26,7 @@ let currentRating = 0;
 function toggleView(showMap) {
     if (showMap) {
         mapDiv.classList.remove('hidden-view');
-        feedDiv.classList.add('hidden-view');
+        feedContainer.classList.add('hidden-view');
         if (sortContainer) sortContainer.classList.add('hidden-view');
 
         mapBtn.classList.add('active');
@@ -39,7 +38,7 @@ function toggleView(showMap) {
         }, 100);
     } else {
         mapDiv.classList.add('hidden-view');
-        feedDiv.classList.remove('hidden-view');
+        feedContainer.classList.remove('hidden-view');
         if (sortContainer) sortContainer.classList.remove('hidden-view');
 
         listBtn.classList.add('active');
@@ -64,6 +63,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 function getUserLocation() {
     if (!navigator.geolocation) {
         loadFeed();
+        loadOrders();
         return;
     }
 
@@ -142,11 +142,14 @@ function hasActiveUserRequest(listing) {
 }
 
 function loadFeed() {
-    feedContainer.innerHTML = '';
-
     fetch(`/api/listings?userId=${CURRENT_USER_ID}`)
         .then(res => res.json())
         .then(data => {
+            const newDataStr = JSON.stringify(data);
+            if (window.currentFeedDataStr === newDataStr) return;
+            window.currentFeedDataStr = newDataStr;
+            
+            feedContainer.innerHTML = '';
             console.log(data);
 
             if (!data || data.length === 0) {
@@ -233,19 +236,6 @@ function loadFeed() {
         });
 }
 
-function formatPickupTime(dateString) {
-    const date = new Date(dateString);
-
-    if (Number.isNaN(date.getTime())) {
-        return 'Άγνωστη ώρα';
-    }
-
-    return date.toLocaleString('el-GR', {
-        dateStyle: 'short',
-        timeStyle: 'short'
-    });
-}
-
 function loadOrders() {
     const ordersContainer = document.getElementById('orders-container');
     if (!ordersContainer) return;
@@ -255,14 +245,12 @@ function loadOrders() {
     fetch(`/api/orders?userId=${CURRENT_USER_ID}`)
         .then(res => res.json())
         .then(orders => {
-            console.log('Δεδομένα Παραγγελιών:', orders);
+            ordersContainer.innerHTML = '';
 
             if (!orders || orders.length === 0) {
                 ordersContainer.innerHTML = '<p>Δεν έχεις παραγγελίες ακόμα.</p>';
                 return;
             }
-
-            ordersContainer.innerHTML = '';
 
             orders.forEach(order => {
                 const statusClass = order.statusClass || 'pending';
@@ -528,3 +516,12 @@ document.getElementById('btn-become-cook').addEventListener('click', () => {
 });
 
 getUserLocation();
+
+// Global smart polling
+setInterval(() => {
+    // Only poll the listing feed dynamically
+    const homeView = document.getElementById('home-view');
+    if (homeView && !homeView.classList.contains('hidden-view')) {
+        loadFeed();
+    }
+}, 10000);

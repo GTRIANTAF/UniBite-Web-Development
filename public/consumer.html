@@ -40,13 +40,12 @@
                 <span>Ακτίνα Αναζήτησης</span>
                 <span id="range-value" class="range-badge">5 km</span>
             </div>
-            <label for="distance-range"></label><input type="range" id="distance-range" min="1" max="20" value="5" class="modern-slider">
+            <input type="range" id="distance-range" min="1" max="20" value="5" class="modern-slider">
             
             <div id="sort-container">
                 <hr style="border: 0; border-top: 1px solid #eee; margin: 18px 0;">
                 <div class="range-header" style="margin-bottom: 8px;">
                     <span>Ταξινόμηση</span>
-                    <label for="sort-select" style="display:none;"></label>
                     <select id="sort-select" class="modern-select">
                         <option value="closest">Κοντινότερα πρώτα</option>
                         <option value="farthest">Μακρινότερα πρώτα</option>
@@ -179,6 +178,7 @@
 
 </main>
 
+<script src="utils.js"></script>
 <script src="consumer.js"></script>
 </body>
 </html>
