@@ -154,6 +154,19 @@ function loadFeed() {
 
             markersLayer.clearLayers();
 
+            // Υπολογισμός απόστασης για κάθε αγγελία και ταξινόμηση
+            data.forEach(listing => {
+                const lat = parseFloat(listing.latitude) || 38.2466;
+                const lng = parseFloat(listing.longitude) || 21.7346;
+                listing.distance = calculateDistance(userLocation.lat, userLocation.lng, lat, lng);
+            });
+
+            // Ταξινόμηση ανάλογα με την επιλογή του χρήστη
+            const sortOrder = document.getElementById('sort-select')?.value || 'closest';
+            data.sort((a, b) => {
+                return sortOrder === 'closest' ? a.distance - b.distance : b.distance - a.distance;
+            });
+
             data.forEach(listing => {
                 const id = listing.listing_id;
                 const portions = listing.available_portions ?? 0;
@@ -164,8 +177,7 @@ function loadFeed() {
 
                 const lat = parseFloat(listing.latitude) || 38.2466;
                 const lng = parseFloat(listing.longitude) || 21.7346;
-
-                const dist = calculateDistance(userLocation.lat, userLocation.lng, lat, lng);
+                const dist = listing.distance;
 
                 const card = document.createElement('article');
                 card.className = `food-card ${isExhausted ? 'noAvailability' : ''}`;
@@ -462,6 +474,10 @@ document.getElementById('distance-range').addEventListener('input', (e) => {
     const radius = e.target.value;
     document.getElementById('range-value').innerText = `${radius} km`;
     filterByDistance(radius);
+});
+
+document.getElementById('sort-select')?.addEventListener('change', () => {
+    loadFeed();
 });
 
 listBtn.addEventListener('click', () => toggleView(false));
