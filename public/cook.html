@@ -102,12 +102,37 @@
 
         <div id="form-message" class="form-message hidden-view"></div>
 
-        <button type="submit" class="submit-listing-btn">
+        <div class="listing-form-actions">
+        <button type="submit" id="submit-listing-btn" class="submit-listing-btn">
             <span class="material-icons">add_circle</span>
             Δημιουργία Αγγελίας
         </button>
 
+        <button type="button" id="cancel-edit-listing-btn" class="cancel-edit-listing-btn hidden-view">
+            <span class="material-icons">close</span>
+            Ακύρωση Επεξεργασίας
+        </button>
+        </div>
+
     </form>
+
+    <section class="provider-dashboard listings-dashboard">
+        <div class="dashboard-header">
+            <div>
+                <h2>Οι Αγγελίες Μου</h2>
+                <p>Δες τις αγγελίες που έχεις δημιουργήσει και κάνε επεξεργασία ή διαγραφή.</p>
+            </div>
+
+            <button type="button" id="refresh-listings-btn" class="dashboard-refresh-btn">
+                <span class="material-icons">refresh</span>
+                Ανανέωση
+            </button>
+        </div>
+
+        <div id="cook-listings-container" class="cook-listings-container">
+            <p class="dashboard-empty">Φόρτωση αγγελιών...</p>
+        </div>
+    </section>
 
     </section>
 

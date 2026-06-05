@@ -2,6 +2,10 @@ const listingForm = document.getElementById('listing-form');
 const formMessage = document.getElementById('form-message');
 const requestsContainer = document.getElementById('cook-requests-container');
 const refreshRequestsBtn = document.getElementById('refresh-requests-btn');
+const listingsContainer = document.getElementById('cook-listings-container');
+const refreshListingsBtn = document.getElementById('refresh-listings-btn');
+const submitListingBtn = document.getElementById('submit-listing-btn');
+const cancelEditListingBtn = document.getElementById('cancel-edit-listing-btn');
 
 const CURRENT_COOK_ID = localStorage.getItem('unibite_user_id');
 
@@ -12,6 +16,8 @@ if (!CURRENT_COOK_ID) {
 //Map Logic
 let map;
 let marker;
+let editingListingId = null;
+let editingListingData = null;
 const btnOpenMap = document.getElementById('btn-open-map');
 const mapModal = document.getElementById('map-modal');
 const closeMapModal = document.getElementById('close-map-modal');
@@ -20,9 +26,26 @@ const latitudeInput = document.getElementById('latitude');
 const longitudeInput = document.getElementById('longitude');
 const mapStatusText = document.getElementById('map-status-text');
 
+function setLocationMarker(lat, lng, shouldCenter = false) {
+    if (!map) return;
+
+    if (marker) {
+        map.removeLayer(marker);
+    }
+
+    marker = L.marker([lat, lng]).addTo(map);
+
+    if (shouldCenter) {
+        map.setView([lat, lng], 15);
+    }
+}
+
 function initMap() {
     if (map) {
         map.invalidateSize();
+        if (latitudeInput.value && longitudeInput.value) {
+            setLocationMarker(parseFloat(latitudeInput.value), parseFloat(longitudeInput.value), true);
+        }
         return;
     }
 
@@ -55,13 +78,14 @@ function initMap() {
     }
 
     map.on('click', function(e) {
-        if (marker) {
-            map.removeLayer(marker);
-        }
-        marker = L.marker(e.latlng).addTo(map);
+        setLocationMarker(e.latlng.lat, e.latlng.lng);
         latitudeInput.value = e.latlng.lat;
         longitudeInput.value = e.latlng.lng;
     });
+
+    if (latitudeInput.value && longitudeInput.value) {
+        setLocationMarker(parseFloat(latitudeInput.value), parseFloat(longitudeInput.value), true);
+    }
 }
 
 if (btnOpenMap) {
@@ -100,6 +124,177 @@ function showMessage(text, type) {
 function getSelectedAllergens() {
     const checkedAllergens = document.querySelectorAll('.allergen-grid input[type="checkbox"]:checked');
     return Array.from(checkedAllergens).map(item => item.value).join(', ');
+}
+
+function setSelectedAllergens(allergensText) {
+    const selectedAllergens = (allergensText || '')
+        .split(',')
+        .map(item => item.trim())
+        .filter(Boolean);
+
+    document.querySelectorAll('.allergen-grid input[type="checkbox"]').forEach(checkbox => {
+        checkbox.checked = selectedAllergens.includes(checkbox.value);
+    });
+}
+
+function getListingStatusClass(listing) {
+    if (listing.status === 'Inactive' || Number(listing.available_portions) <= 0) return 'completed';
+    return 'approved';
+}
+
+function renderListingCard(listing) {
+    const statusClass = getListingStatusClass(listing);
+    const available = listing.available_portions ?? 0;
+    const total = listing.total_portions ?? 0;
+    const statusText = listing.status === 'Inactive' || Number(available) <= 0 ? 'Inactive' : 'Active';
+
+    return `
+        <article class="provider-request-card ${statusClass}">
+            <div class="provider-request-header">
+                <div>
+                    <h3>${listing.title}</h3>
+                    <p>${formatDate(listing.creation_timestamp)}</p>
+                </div>
+                <span class="provider-status-badge ${statusClass}">${statusText}</span>
+            </div>
+
+            <div class="provider-request-body listing-card-body">
+                <p><strong>Τοποθεσία:</strong> ${listing.pickup_location || ''}</p>
+                <p><strong>Ώρα:</strong> ${formatDate(listing.pickup_time)}</p>
+                <p><strong>Μερίδες:</strong> ${available}/${total}</p>
+            </div>
+
+            <div class="provider-request-actions">
+                <button class="provider-action-btn edit-listing" data-listing-id="${listing.listing_id}">
+                    <span class="material-icons">edit</span>
+                    Edit
+                </button>
+
+                <button class="provider-action-btn delete-listing" data-listing-id="${listing.listing_id}">
+                    <span class="material-icons">delete</span>
+                    Delete
+                </button>
+            </div>
+        </article>
+    `;
+}
+
+async function loadCookListings() {
+    if (!listingsContainer) return;
+
+    listingsContainer.innerHTML = '<p class="dashboard-empty">Φόρτωση αγγελιών...</p>';
+
+    try {
+        const response = await fetch(`/api/listings/cook/${CURRENT_COOK_ID}`);
+        const listings = await response.json();
+
+        if (!response.ok) {
+            listingsContainer.innerHTML = `<p class="dashboard-empty error">${listings.error || 'Σφάλμα φόρτωσης αγγελιών.'}</p>`;
+            return;
+        }
+
+        if (!listings || listings.length === 0) {
+            listingsContainer.innerHTML = '<p class="dashboard-empty">Δεν έχεις δημιουργήσει αγγελίες ακόμα.</p>';
+            return;
+        }
+
+        listingsContainer.innerHTML = listings.map(renderListingCard).join('');
+    } catch (error) {
+        console.error(error);
+        listingsContainer.innerHTML = '<p class="dashboard-empty error">Υπήρξε πρόβλημα σύνδεσης με τον server.</p>';
+    }
+}
+
+function resetListingFormMode() {
+    editingListingId = null;
+    editingListingData = null;
+    listingForm.reset();
+
+    if (marker && map) {
+        map.removeLayer(marker);
+        marker = null;
+    }
+
+    latitudeInput.value = '';
+    longitudeInput.value = '';
+    mapStatusText.textContent = '📍 Δεν έχει επιλεγεί τοποθεσία στον χάρτη';
+    mapStatusText.style.color = '#666';
+
+    if (submitListingBtn) {
+        submitListingBtn.innerHTML = '<span class="material-icons">add_circle</span> Δημιουργία Αγγελίας';
+    }
+
+    if (cancelEditListingBtn) {
+        cancelEditListingBtn.classList.add('hidden-view');
+    }
+}
+
+function startEditListing(listing) {
+    editingListingId = listing.listing_id;
+    editingListingData = listing;
+
+    document.getElementById('title').value = listing.title || '';
+    document.getElementById('description').value = listing.description || '';
+    document.getElementById('photo_url').value = listing.photo_url || '';
+    document.getElementById('pickup_location').value = listing.pickup_location || '';
+    document.getElementById('pickup_building').value = listing.pickup_building || '';
+    document.getElementById('pickup_details').value = listing.pickup_details || '';
+    document.getElementById('pickup_time').value = listing.pickup_time ? listing.pickup_time.slice(0, 16) : '';
+    document.getElementById('total_portions').value = listing.total_portions || 1;
+    latitudeInput.value = listing.latitude || '';
+    longitudeInput.value = listing.longitude || '';
+    setSelectedAllergens(listing.allergens);
+
+    if (latitudeInput.value && longitudeInput.value) {
+        mapStatusText.textContent = `📍 Επιλέχθηκε: ${parseFloat(latitudeInput.value).toFixed(4)}, ${parseFloat(longitudeInput.value).toFixed(4)}`;
+        mapStatusText.style.color = 'green';
+        setLocationMarker(parseFloat(latitudeInput.value), parseFloat(longitudeInput.value), true);
+    }
+
+    if (submitListingBtn) {
+        submitListingBtn.innerHTML = '<span class="material-icons">save</span> Αποθήκευση Αλλαγών';
+    }
+
+    if (cancelEditListingBtn) {
+        cancelEditListingBtn.classList.remove('hidden-view');
+    }
+
+    document.getElementById('kitchen-view').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function deleteCookListing(listingId) {
+    const confirmDelete = confirm('Είσαι σίγουρος ότι θέλεις να διαγράψεις αυτή την αγγελία;');
+
+    if (!confirmDelete) return;
+
+    try {
+        const response = await fetch(`/api/listings/${listingId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                cook_id: Number(CURRENT_COOK_ID)
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            alert(result.error || 'Η διαγραφή απέτυχε.');
+            return;
+        }
+
+        alert(result.message || 'Η αγγελία διαγράφηκε.');
+        if (String(editingListingId) === String(listingId)) {
+            resetListingFormMode();
+        }
+        loadCookListings();
+        loadCookRequests();
+    } catch (error) {
+        console.error(error);
+        alert('Υπήρξε πρόβλημα σύνδεσης με τον server.');
+    }
 }
 
 
@@ -269,6 +464,14 @@ listingForm.addEventListener('submit', async (event) => {
         return;
     }
 
+    const totalPortions = Number(document.getElementById('total_portions').value);
+    let availablePortions = totalPortions;
+
+    if (editingListingData) {
+        const reservedPortions = Number(editingListingData.total_portions || 0) - Number(editingListingData.available_portions || 0);
+        availablePortions = Math.max(totalPortions - reservedPortions, 0);
+    }
+
     const listingData = {
         cook_id: Number(CURRENT_COOK_ID),
         title: document.getElementById('title').value.trim(),
@@ -281,12 +484,20 @@ listingForm.addEventListener('submit', async (event) => {
         pickup_time: document.getElementById('pickup_time').value,
         latitude: parseFloat(lat),
         longitude: parseFloat(lng),
-        total_portions: Number(document.getElementById('total_portions').value)
+        total_portions: totalPortions
     };
 
+    if (editingListingId) {
+        listingData.available_portions = availablePortions;
+        listingData.status = availablePortions > 0 ? 'Active' : 'Inactive';
+    }
+
     try {
-        const response = await fetch('/api/listings', {
-            method: 'POST',
+        const endpoint = editingListingId ? `/api/listings/${editingListingId}` : '/api/listings';
+        const method = editingListingId ? 'PUT' : 'POST';
+
+        const response = await fetch(endpoint, {
+            method,
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -296,12 +507,13 @@ listingForm.addEventListener('submit', async (event) => {
         const result = await response.json();
 
         if (!response.ok) {
-            showMessage(result.error || 'Η δημιουργία αγγελίας απέτυχε.', 'error');
+            showMessage(result.error || 'Η αποθήκευση αγγελίας απέτυχε.', 'error');
             return;
         }
 
-        showMessage('Η αγγελία δημιουργήθηκε επιτυχώς.', 'success');
-        listingForm.reset();
+        showMessage(editingListingId ? 'Η αγγελία ενημερώθηκε επιτυχώς.' : 'Η αγγελία δημιουργήθηκε επιτυχώς.', 'success');
+        resetListingFormMode();
+        loadCookListings();
         loadCookRequests();
     } catch (error) {
         console.error(error);
@@ -322,8 +534,49 @@ if (requestsContainer) {
     });
 }
 
+if (listingsContainer) {
+    listingsContainer.addEventListener('click', async (event) => {
+        const editButton = event.target.closest('.edit-listing');
+        const deleteButton = event.target.closest('.delete-listing');
+
+        if (editButton) {
+            const listingId = editButton.getAttribute('data-listing-id');
+
+            try {
+                const response = await fetch(`/api/listings/${listingId}`);
+                const listing = await response.json();
+
+                if (!response.ok) {
+                    alert(listing.error || 'Δεν βρέθηκε η αγγελία.');
+                    return;
+                }
+
+                startEditListing(listing);
+            } catch (error) {
+                console.error(error);
+                alert('Υπήρξε πρόβλημα σύνδεσης με τον server.');
+            }
+
+            return;
+        }
+
+        if (deleteButton) {
+            const listingId = deleteButton.getAttribute('data-listing-id');
+            deleteCookListing(listingId);
+        }
+    });
+}
+
 if (refreshRequestsBtn) {
     refreshRequestsBtn.addEventListener('click', loadCookRequests);
+}
+
+if (refreshListingsBtn) {
+    refreshListingsBtn.addEventListener('click', loadCookListings);
+}
+
+if (cancelEditListingBtn) {
+    cancelEditListingBtn.addEventListener('click', resetListingFormMode);
 }
 
 // --- Navigation & Profile Logic ---
@@ -339,6 +592,7 @@ function switchView(viewName) {
     if (viewName === 'kitchen') {
         document.getElementById('kitchen-view').classList.remove('hidden-view');
         document.getElementById('nav-kitchen').classList.add('active');
+        loadCookListings();
     } else if (viewName === 'requests') {
         document.getElementById('requests-view').classList.remove('hidden-view');
         document.getElementById('nav-requests').classList.add('active');
@@ -382,4 +636,5 @@ document.getElementById('btn-logout').addEventListener('click', () => {
     }
 });
 
+loadCookListings();
 loadCookRequests();
