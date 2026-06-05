@@ -10,4 +10,5 @@
 /dataSources.local.xml
 node_modules/
 .idea/
+.env
 src/.env

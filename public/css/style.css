@@ -745,6 +745,32 @@ body {
     background: #e64a19;
 }
 
+.listing-form-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cancel-edit-listing-btn {
+    width: 100%;
+    border: 1px solid #ddd;
+    background: white;
+    color: var(--text-dark);
+    border-radius: 10px;
+    padding: 14px;
+    font-weight: 800;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.cancel-edit-listing-btn:hover {
+    background: #f1f3f5;
+}
+
 .form-message {
     padding: 14px;
     border-radius: 10px;
@@ -1003,6 +1029,7 @@ body {
 
     .form-section:nth-of-type(3),
     .form-message,
+    .listing-form-actions,
     .submit-listing-btn {
         grid-column: 1 / -1;
     }
@@ -1144,6 +1171,7 @@ body {
 
     .form-section:nth-of-type(3),
     .form-message,
+    .listing-form-actions,
     .submit-listing-btn {
         grid-column: 1 / -1;
     }
@@ -1199,6 +1227,20 @@ body {
     display: flex;
     flex-direction: column;
     gap: 14px;
+}
+
+.cook-listings-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.listings-dashboard {
+    margin-top: 28px;
+}
+
+.listing-card-body {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
 .provider-request-card {
@@ -1303,6 +1345,16 @@ body {
 
 .provider-action-btn.reject,
 .provider-action-btn.no-show {
+    background: #dc3545;
+    color: white;
+}
+
+.provider-action-btn.edit-listing {
+    background: var(--primary-color);
+    color: white;
+}
+
+.provider-action-btn.delete-listing {
     background: #dc3545;
     color: white;
 }
