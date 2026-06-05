@@ -28,19 +28,19 @@ UniBite is a localized food-sharing web application designed specifically for un
 
 ### Installation
 
-Installation
+1. **Clone the repository**: git clone https://github.com/GTRIANTAF/UniBite-Web-Development.git cd UniBite-Web-Development
 
-1. Clone the repository: git clone https://github.com/GTRIANTAF/UniBite-Web-Development.git cd UniBite-Web-Development
 
-2. Install dependencies: npm install
+2. **Install dependencies**: npm install
 
-3. Configure Environment Variables:
 
-Create a .env file inside the /src folder.
-Use the src/.env.example as a template to set your database credentials and JWT Secret.
+3. **Configure Environment Variables**: Create a .env file inside the /src folder. Use the src/.env.example as a template to set your database credentials and JWT Secret.
 
-4. Initialize Database: Ensure your MySQL server is running, then run the database setup script: node run_db.js
 
-5. Start the Development Server: node src/server.js
+4. **Initialize Database**: Ensure your MySQL server is running, then run the database setup script: node run_db.js
 
-6. Access the Application: Open your browser and navigate to http://localhost:3000
+
+5. **Start the Development Server**: node src/server.js
+
+
+6. **Access the Application**: Open your browser and navigate to http://localhost:3000
