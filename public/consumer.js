@@ -7,12 +7,14 @@ if (!CURRENT_USER_ID) {
 
 const map = L.map('map').setView([38.2466, 21.7346], 13);
 const markersLayer = L.layerGroup().addTo(map);
+let allMarkers = [];
 let userLocation = { lat: 38.2466, lng: 21.7346 };
 let userMarker = null;
 
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
     maxZoom: 19,
-    attribution: '© OpenStreetMap contributors'
+    maxNativeZoom: 18
 }).addTo(map);
 
 const listBtn = document.getElementById('list-view-btn');
@@ -109,12 +111,9 @@ function filterByDistance(maxKm) {
         card.style.display = d > limit ? 'none' : 'block';
     });
 
-    markersLayer.eachLayer(marker => {
-        const d = marker.options.distance;
-
-        if (d > limit) {
-            markersLayer.removeLayer(marker);
-        } else if (!markersLayer.hasLayer(marker)) {
+    markersLayer.clearLayers();
+    allMarkers.forEach(marker => {
+        if (marker.options.distance <= limit) {
             markersLayer.addLayer(marker);
         }
     });
@@ -159,6 +158,7 @@ function loadFeed() {
             }
 
             markersLayer.clearLayers();
+            allMarkers = [];
 
             data.forEach(listing => {
                 const id = listing.listing_id;
@@ -224,6 +224,7 @@ function loadFeed() {
                     </div>
                 `);
 
+                allMarkers.push(marker);
                 markersLayer.addLayer(marker);
             });
 
@@ -488,6 +489,20 @@ document.getElementById('distance-range').addEventListener('input', (e) => {
     const radius = e.target.value;
     document.getElementById('range-value').innerText = `${radius} km`;
     filterByDistance(radius);
+});
+
+document.getElementById('sort-select').addEventListener('change', (e) => {
+    const order = e.target.value;
+    const cards = Array.from(document.querySelectorAll('.food-card'));
+
+    cards.sort((a, b) => {
+        const da = parseFloat(a.dataset.distance);
+        const db = parseFloat(b.dataset.distance);
+        return order === 'closest' ? da - db : db - da;
+    });
+
+    const feed = document.getElementById('dynamic-feed');
+    cards.forEach(card => feed.appendChild(card));
 });
 
 listBtn.addEventListener('click', () => toggleView(false));
